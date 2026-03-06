@@ -2,6 +2,9 @@ import axios from 'axios';
 import Swal from 'sweetalert2';
 
 const setupAxiosInterceptors = () => {
+    // Set base URL from environment variable if available
+    axios.defaults.baseURL = import.meta.env.VITE_API_BASE_URL || '';
+
     // Response interceptor
     axios.interceptors.response.use(
         (response) => {
