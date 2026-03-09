@@ -13,6 +13,7 @@ export function Login() {
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [middleInitial, setMiddleInitial] = useState('');
+  const [phoneNumber, setPhoneNumber] = useState('');
   const [role, setRole] = useState<'student' | 'staff'>('student');
   const [otp, setOtp] = useState('');
   const [newPassword, setNewPassword] = useState('');
@@ -93,7 +94,7 @@ export function Login() {
           role,
           studentProfile: role === 'student' ? {
             roomNumber: 'TBD',
-            phoneNumber: '',
+            phoneNumber: phoneNumber ? `+63${phoneNumber.replace(/^0+/, '')}` : '',
             emergencyContactName: '',
             emergencyContactPhone: '',
             status: 'inactive'
@@ -377,17 +378,30 @@ export function Login() {
                 </div>
 
                 {role === 'student' && (
-                  <div className="relative">
-                    <User className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-                    <input
-                      type="text"
-                      value={studentId}
-                      onChange={(e) => setStudentId(e.target.value)}
-                      className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#FFD700] focus:border-transparent outline-none"
-                      placeholder="Student ID"
-                      required
-                    />
-                  </div>
+                  <>
+                    <div className="relative">
+                      <User className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                      <input
+                        type="text"
+                        value={studentId}
+                        onChange={(e) => setStudentId(e.target.value)}
+                        className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#FFD700] focus:border-transparent outline-none"
+                        placeholder="Student ID"
+                        required
+                      />
+                    </div>
+                    <div className="relative">
+                      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm font-semibold">+63</span>
+                      <input
+                        type="tel"
+                        value={phoneNumber}
+                        onChange={(e) => setPhoneNumber(e.target.value.replace(/\D/g, ''))}
+                        className="w-full pl-11 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#FFD700] focus:border-transparent outline-none"
+                        placeholder="9123456789"
+                        required
+                      />
+                    </div>
+                  </>
                 )}
 
                 <div className="relative">
@@ -435,7 +449,7 @@ export function Login() {
             ) : (
               <form onSubmit={handleVerifyOtp} className="space-y-4">
                 <div className="text-center mb-4">
-                  <p className="text-gray-600">Enter the 6-digit code sent to <span className="font-bold">{registerEmail}</span></p>
+                  <p className="text-gray-600">Enter the 6-digit code sent to <span className="font-bold">{registerEmail}</span>{phoneNumber && <span> and <span className="font-bold">+63{phoneNumber}</span></span>}</p>
                 </div>
                 <div>
                   <input
