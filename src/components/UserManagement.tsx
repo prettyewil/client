@@ -7,7 +7,7 @@ import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Label } from './ui/label';
 import { useAuth } from '../context/AuthContext';
-import { Tabs } from './ui/Tabs';
+// import { Tabs } from './ui/Tabs';
 import { usePagination } from '../hooks/usePagination';
 import {
     Pagination,
@@ -470,6 +470,10 @@ export function UserManagement() {
                                         }`}>
                                         {item.studentProfile?.status === 'active' ? 'Active' : 'Inactive'}
                                     </span>
+                                ) : activeUserTab === 'pending' ? (
+                                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-yellow-50 text-yellow-700 border border-yellow-200">
+                                        Pending
+                                    </span>
                                 ) : (
                                     <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-green-50 text-green-700 border border-green-200">
                                         Active
@@ -516,14 +520,26 @@ export function UserManagement() {
                                             </Button>
                                         </>
                                     )}
+                                    {activeUserTab === 'pending' && (
+                                        <>
+                                            <Button variant="ghost" size="sm" onClick={() => handleApproveUser(item._id)} className="text-green-600 hover:text-green-700 hover:bg-green-50 h-8">
+                                                <UserCheck className="w-4 h-4 mr-1" /> Approve
+                                            </Button>
+                                            <Button variant="ghost" size="sm" onClick={() => handleRejectUser(item._id)} className="text-red-600 hover:text-red-700 hover:bg-red-50 h-8">
+                                                <UserX className="w-4 h-4 mr-1" /> Reject
+                                            </Button>
+                                        </>
+                                    )}
                                     {activeUserTab === 'employees' && isSuperAdmin && (
                                         <Button variant="ghost" size="sm" onClick={() => openRoleModal(item)} className="text-indigo-600 hover:text-indigo-700 hover:bg-indigo-50 h-8">
                                             <Edit className="w-4 h-4 mr-1" /> Role
                                         </Button>
                                     )}
-                                    <Button variant="ghost" size="sm" onClick={() => handleDeleteUser(item._id, activeUserTab === 'students' ? 'student' : 'employee')} className="text-red-600 hover:text-red-700 hover:bg-red-50 h-8">
-                                        <Trash2 className="w-4 h-4 mr-1" /> Delete
-                                    </Button>
+                                    {activeUserTab !== 'pending' && (
+                                        <Button variant="ghost" size="sm" onClick={() => handleDeleteUser(item._id, activeUserTab === 'students' ? 'student' : 'employee')} className="text-red-600 hover:text-red-700 hover:bg-red-50 h-8">
+                                            <Trash2 className="w-4 h-4 mr-1" /> Delete
+                                        </Button>
+                                    )}
                                 </div>
                             )}
                         </div>
@@ -663,9 +679,11 @@ export function UserManagement() {
                                                     <Edit className="w-4 h-4" />
                                                 </Button>
                                             )}
-                                            <Button variant="ghost" size="icon" onClick={() => handleDeleteUser(item._id, activeUserTab === 'students' ? 'student' : 'employee')} className="h-8 w-8 text-red-500 hover:bg-red-50">
-                                                <Trash2 className="w-4 h-4" />
-                                            </Button>
+                                            {activeUserTab !== 'pending' && (
+                                                <Button variant="ghost" size="icon" onClick={() => handleDeleteUser(item._id, activeUserTab === 'students' ? 'student' : 'employee')} className="h-8 w-8 text-red-500 hover:bg-red-50">
+                                                    <Trash2 className="w-4 h-4" />
+                                                </Button>
+                                            )}
                                         </td>
                                     )}
                                 </tr>
