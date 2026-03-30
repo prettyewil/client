@@ -48,6 +48,7 @@ export function TaskManagement() {
         dueDate: '', // YYYY-MM-DDTHH:mm
         status: 'pending' as 'pending' | 'completed',
         notes: '',
+        syncToCalendar: false,
     };
     const [formData, setFormData] = useState(initialForm);
 
@@ -99,7 +100,8 @@ export function TaskManagement() {
                 assignedRoom: task.assignedRoom,
                 dueDate: moment(task.dueDate).format('YYYY-MM-DDTHH:mm'),
                 status: task.status,
-                notes: task.notes || ''
+                notes: task.notes || '',
+                syncToCalendar: !!task.googleEventId,
             });
         } else {
             setEditingId(null);
@@ -374,6 +376,19 @@ export function TaskManagement() {
                                 onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
                                 placeholder="Additional instructions..."
                             />
+                        </div>
+
+                        <div className="flex items-center gap-2 mt-4 pt-4 border-t">
+                            <input
+                                type="checkbox"
+                                id="syncToCalendar"
+                                checked={formData.syncToCalendar}
+                                onChange={(e) => setFormData({ ...formData, syncToCalendar: e.target.checked })}
+                                className="w-4 h-4 text-[#001F3F] rounded border-gray-300"
+                            />
+                            <Label htmlFor="syncToCalendar" className="cursor-pointer font-medium mb-0">
+                                Sync with Google Calendar
+                            </Label>
                         </div>
                     </div>
                     <DialogFooter>

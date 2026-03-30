@@ -16,6 +16,10 @@ export function SystemSettings() {
         backupFrequency: 'weekly',
         maintenanceMode: false,
         allowRegistration: true,
+        passwordMinLength: 8,
+        requireUppercase: true,
+        requireNumber: true,
+        requireSpecialChar: true,
     });
     const [loading, setLoading] = useState(false);
 
@@ -32,6 +36,10 @@ export function SystemSettings() {
                     backupFrequency: res.data.backupFrequency || 'weekly',
                     maintenanceMode: res.data.maintenanceMode || false,
                     allowRegistration: res.data.allowRegistration !== false, // default true
+                    passwordMinLength: res.data.passwordMinLength || 8,
+                    requireUppercase: res.data.requireUppercase !== false,
+                    requireNumber: res.data.requireNumber !== false,
+                    requireSpecialChar: res.data.requireSpecialChar !== false,
                 });
             }
         } catch (error) {
@@ -102,6 +110,62 @@ export function SystemSettings() {
                             <p className="text-xs text-gray-500 mt-2">
                                 Users will be logged out automatically after this duration of inactivity.
                             </p>
+                        </div>
+                    </div>
+                </section>
+
+                {/* Password Policy Section */}
+                <section>
+                    <h2 className="text-lg font-semibold border-b pb-2 mb-4 flex items-center gap-2 text-gray-800">
+                        <ShieldAlert className="w-5 h-5 text-red-500" /> Password Policy
+                    </h2>
+                    <div className="grid md:grid-cols-2 gap-6">
+                        <div>
+                            <Label className="block mb-2 text-gray-700">Minimum Password Length</Label>
+                            <Input
+                                type="number"
+                                min="6"
+                                max="32"
+                                value={settings.passwordMinLength}
+                                onChange={(e) => setSettings({ ...settings, passwordMinLength: Number(e.target.value) })}
+                                className="max-w-[200px]"
+                            />
+                            <p className="text-xs text-gray-500 mt-2">
+                                Enforce minimum characters for new passwords.
+                            </p>
+                        </div>
+                        <div className="space-y-3 pt-2">
+                            <Label className="block font-medium text-gray-800">Complexity Requirements</Label>
+                            <div className="flex items-center gap-3">
+                                <input
+                                    type="checkbox"
+                                    id="requireUppercase"
+                                    checked={settings.requireUppercase}
+                                    onChange={(e) => setSettings({ ...settings, requireUppercase: e.target.checked })}
+                                    className="w-4 h-4 text-[#001F3F] rounded border-gray-300 cursor-pointer"
+                                />
+                                <Label htmlFor="requireUppercase" className="text-sm cursor-pointer block">Require Uppercase Letter</Label>
+                            </div>
+                            <div className="flex items-center gap-3">
+                                <input
+                                    type="checkbox"
+                                    id="requireNumber"
+                                    checked={settings.requireNumber}
+                                    onChange={(e) => setSettings({ ...settings, requireNumber: e.target.checked })}
+                                    className="w-4 h-4 text-[#001F3F] rounded border-gray-300 cursor-pointer"
+                                />
+                                <Label htmlFor="requireNumber" className="text-sm cursor-pointer block">Require Number</Label>
+                            </div>
+                            <div className="flex items-center gap-3">
+                                <input
+                                    type="checkbox"
+                                    id="requireSpecialChar"
+                                    checked={settings.requireSpecialChar}
+                                    onChange={(e) => setSettings({ ...settings, requireSpecialChar: e.target.checked })}
+                                    className="w-4 h-4 text-[#001F3F] rounded border-gray-300 cursor-pointer"
+                                />
+                                <Label htmlFor="requireSpecialChar" className="text-sm cursor-pointer block">Require Special Character</Label>
+                            </div>
                         </div>
                     </div>
                 </section>

@@ -3,7 +3,7 @@ import axios from 'axios';
 import Swal from 'sweetalert2';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
-import { Plus, Trash2, Edit, CopyPlus, FileText } from 'lucide-react';
+import { Plus, Trash2, Edit, CopyPlus, FileText, XCircle } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from './ui/dialog';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
@@ -206,6 +206,53 @@ export function PaymentsManagement() {
         Swal.fire('Deleted', '', 'success');
       } catch (error) {
         Swal.fire('Error', 'Failed to delete payment.', 'error');
+      }
+    }
+  };
+
+  const handleReject = async (id: string | number) => {
+    const { value: text } = await Swal.fire({
+      title: 'Reject Payment',
+      input: 'textarea',
+      inputLabel: 'Reason for rejection',
+      inputPlaceholder: 'Type your message here...',
+      inputAttributes: {
+        'aria-label': 'Reason for rejection'
+      },
+      showCancelButton: true,
+      confirmButtonColor: '#d33',
+      inputValidator: (value) => {
+        if (!value) {
+          return 'You need to write a reason!'
+        }
+      }
+    });
+
+    if (text) {
+      try {
+        const payment = payments.find(p => (p._id || p.id) === id);
+        if (!payment) return;
+
+        const updatedNotes = payment.notes 
+          ? `${payment.notes}\nRejection Reason: ${text}` 
+          : `Rejection Reason: ${text}`;
+
+        const payload = {
+          student: payment.student?._id || payment.student,
+          amount: payment.amount,
+          type: payment.type,
+          dueDate: payment.dueDate,
+          status: 'rejected',
+          notes: updatedNotes,
+          receiptUrl: payment.receiptUrl,
+          referenceNumber: payment.referenceNumber,
+        };
+
+        await axios.put(`/api/payments/${id}`, payload);
+        fetchPayments();
+        Swal.fire('Rejected', 'Payment has been rejected.', 'success');
+      } catch (error) {
+        Swal.fire('Error', 'Failed to reject payment.', 'error');
       }
     }
   };
@@ -431,7 +478,9 @@ export function PaymentsManagement() {
                           ? 'bg-indigo-100 text-indigo-800'
                           : p.status === 'overdue'
                             ? 'bg-red-100 text-red-700'
-                            : 'bg-yellow-100 text-yellow-800'
+                            : p.status === 'rejected'
+                              ? 'bg-gray-200 text-gray-800'
+                              : 'bg-yellow-100 text-yellow-800'
                       }`}
                   >
                     {p.status}
@@ -449,6 +498,17 @@ export function PaymentsManagement() {
                   >
                     <Edit className="w-4 h-4 text-blue-600" />
                   </Button>
+
+                  {(p.status === 'pending' || p.status === 'submitted') && (
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      onClick={() => handleReject(p._id || p.id)}
+                      title="Reject Payment"
+                    >
+                      <XCircle className="w-4 h-4 text-orange-500" />
+                    </Button>
+                  )}
 
                   <Button
                     size="sm"
@@ -517,7 +577,9 @@ export function PaymentsManagement() {
                       ? 'bg-indigo-100 text-indigo-800'
                       : p.status === 'overdue'
                         ? 'bg-red-100 text-red-700'
-                        : 'bg-yellow-100 text-yellow-800'
+                        : p.status === 'rejected'
+                          ? 'bg-gray-200 text-gray-800'
+                          : 'bg-yellow-100 text-yellow-800'
                   }`}
               >
                 {p.status}
@@ -562,6 +624,17 @@ export function PaymentsManagement() {
                 >
                   <Edit className="w-4 h-4" />
                 </Button>
+
+                {(p.status === 'pending' || p.status === 'submitted') && (
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    onClick={() => handleReject(p._id || p.id)}
+                    className="h-8 w-8 text-orange-500"
+                  >
+                    <XCircle className="w-4 h-4" />
+                  </Button>
+                )}
 
                 <Button
                   size="sm"
@@ -669,6 +742,7 @@ export function PaymentsManagement() {
                 <option value="paid">Paid</option>
                 <option value="verified">Verified</option>
                 <option value="overdue">Overdue</option>
+                <option value="rejected">Rejected</option>
               </select>
             </div>
             <div>
