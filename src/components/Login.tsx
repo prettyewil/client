@@ -95,8 +95,7 @@ export function Login() {
           studentId: role === 'student' ? studentId : undefined,
           password,
           role,
-          otpMethod,
-          studentProfile: (role === 'student' || otpMethod === 'sms') ? {
+          studentProfile: role === 'student' ? {
             roomNumber: 'TBD',
             phoneNumber: phoneNumber ? `+63${phoneNumber.replace(/^0+/, '')}` : '',
             emergencyContactName: '',
@@ -166,7 +165,7 @@ export function Login() {
       const res = await fetch('/api/auth/forgot-password', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: identifier, otpMethod })
+        body: JSON.stringify({ email: identifier })
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.message);
@@ -239,12 +238,13 @@ export function Login() {
       const res = await fetch('/api/auth/login-otp-request', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ phoneNumber })
+        body: JSON.stringify({ email: identifier })
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.message);
 
-      setSuccess('OTP sent to your phone.');
+      setRegisterEmail(identifier);
+      setSuccess('OTP sent to your email.');
       setStep('otp');
     } catch (err: any) {
       setError(err.message);
@@ -265,7 +265,7 @@ export function Login() {
       const res = await fetch('/api/auth/login-otp-verify', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ phoneNumber, otp })
+        body: JSON.stringify({ email: registerEmail, otp })
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.message);
@@ -332,16 +332,7 @@ export function Login() {
               <form onSubmit={handleForgotPassword} className="space-y-4">
                 <h3 className="text-center font-semibold text-[#001F3F]">Recovery</h3>
                 <p className="text-sm text-center text-gray-600">Enter your email to receive an OTP.</p>
-                <div className="flex gap-4 mb-4 justify-center">
-                  <label className="flex items-center gap-2 cursor-pointer">
-                    <input type="radio" name="resetOtpMethod" value="email" checked={otpMethod === 'email'} onChange={() => setOtpMethod('email')} className="text-[#001F3F]" />
-                    <span className="text-sm text-gray-700">Email OTP</span>
-                  </label>
-                  <label className="flex items-center gap-2 cursor-pointer">
-                    <input type="radio" name="resetOtpMethod" value="sms" checked={otpMethod === 'sms'} onChange={() => setOtpMethod('sms')} className="text-[#001F3F]" />
-                    <span className="text-sm text-gray-700">SMS OTP</span>
-                  </label>
-                </div>
+
                 <div className="relative">
                   <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
                   <input
@@ -363,7 +354,7 @@ export function Login() {
             ) : step === 'reset-otp' ? (
               <form onSubmit={handleVerifyResetOtp} className="space-y-4">
                 <h3 className="text-center font-semibold text-[#001F3F]">Verify OTP</h3>
-                <p className="text-sm text-center text-gray-600">Enter the 6-digit code sent to {otpMethod === 'email' ? registerEmail : 'your phone'}</p>
+                <p className="text-sm text-center text-gray-600">Enter the 6-digit code sent to {registerEmail}</p>
                 <div>
                   <input
                     type="text"
@@ -403,21 +394,21 @@ export function Login() {
           ) : mode === 'login-otp' ? (
             step === 'details' ? (
               <form onSubmit={handleLoginOtpRequest} className="space-y-4">
-                <h3 className="text-center font-semibold text-[#001F3F]">Phone OTP Login</h3>
-                <p className="text-sm text-center text-gray-600">Enter your registered phone number.</p>
+                <h3 className="text-center font-semibold text-[#001F3F]">Email OTP Login</h3>
+                <p className="text-sm text-center text-gray-600">Enter your registered email address.</p>
                 <div className="relative">
-                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm font-semibold">+63</span>
+                  <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
                   <input
-                    type="tel"
-                    value={phoneNumber}
-                    onChange={(e) => setPhoneNumber(e.target.value.replace(/\D/g, ''))}
-                    className="w-full pl-11 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#FFD700] focus:border-transparent outline-none"
-                    placeholder="9123456789"
+                    type="email"
+                    value={identifier}
+                    onChange={(e) => setIdentifier(e.target.value)}
+                    className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#FFD700] focus:border-transparent outline-none"
+                    placeholder="Email Address"
                     required
                   />
                 </div>
                 <button type="submit" className="w-full bg-[#001F3F] text-white py-2.5 rounded-lg hover:bg-[#003366] transition-colors">
-                  Request OTP
+                  Send OTP
                 </button>
                 <div className="flex justify-center mt-2">
                   <button type="button" onClick={() => setMode('login')} className="text-sm text-gray-500 hover:text-gray-700">
@@ -429,7 +420,7 @@ export function Login() {
               <form onSubmit={handleLoginOtpVerify} className="space-y-4">
                 <h3 className="text-center font-semibold text-[#001F3F]">Verify OTP</h3>
                 <p className="text-center text-sm text-gray-600">
-                  Enter the 6-digit code sent to <span className="font-bold">+63{phoneNumber}</span>
+                  Enter the 6-digit code sent to <span className="font-bold">{registerEmail}</span>
                 </p>
                 <div>
                   <input
@@ -502,18 +493,9 @@ export function Login() {
                   </div>
                 )}
 
-                <div className="flex gap-4 mt-2 justify-center">
-                  <label className="flex items-center gap-2 cursor-pointer">
-                    <input type="radio" name="regOtpMethod" value="email" checked={otpMethod === 'email'} onChange={() => setOtpMethod('email')} className="text-[#001F3F]" />
-                    <span className="text-sm text-gray-700">Email OTP</span>
-                  </label>
-                  <label className="flex items-center gap-2 cursor-pointer">
-                    <input type="radio" name="regOtpMethod" value="sms" checked={otpMethod === 'sms'} onChange={() => setOtpMethod('sms')} className="text-[#001F3F]" />
-                    <span className="text-sm text-gray-700">SMS OTP</span>
-                  </label>
-                </div>
 
-                {(role === 'student' || otpMethod === 'sms') && (
+
+                {role === 'student' && (
                   <div className="relative">
                     <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm font-semibold">+63</span>
                     <input
@@ -522,7 +504,7 @@ export function Login() {
                       onChange={(e) => setPhoneNumber(e.target.value.replace(/\D/g, ''))}
                       className="w-full pl-11 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#FFD700] focus:border-transparent outline-none"
                       placeholder="9123456789"
-                      required={otpMethod === 'sms' || role === 'student'}
+                      required={role === 'student'}
                     />
                   </div>
                 )}
@@ -572,7 +554,7 @@ export function Login() {
             ) : (
               <form onSubmit={handleVerifyOtp} className="space-y-4">
                 <div className="text-center mb-4">
-                  <p className="text-gray-600">Enter the 6-digit code sent to <span className="font-bold">{otpMethod === 'sms' && phoneNumber ? `+63${phoneNumber}` : registerEmail}</span></p>
+                  <p className="text-gray-600">Enter the 6-digit code sent to <span className="font-bold">{registerEmail}</span></p>
                 </div>
                 <div>
                   <input
@@ -638,7 +620,7 @@ export function Login() {
                     onClick={() => { setMode('login-otp'); setStep('details'); setError(''); setSuccess(''); }}
                     className="text-sm text-[#001F3F] hover:underline"
                   >
-                    Login via SMS OTP
+                    Login via Email OTP
                   </button>
                   <button
                     type="button"
