@@ -5,7 +5,7 @@ import { Lock, Mail, AlertCircle, ShieldCheck, User, Briefcase } from 'lucide-re
 
 export function Login() {
   const [mode, setMode] = useState<'login' | 'register' | 'forgot-password' | 'login-otp'>('login');
-  const [step, setStep] = useState<'details' | 'otp' | 'reset-otp' | 'reset-password'>('details');
+  const [step, setStep] = useState<'details' | 'otp' | 'reset-otp' | 'reset-password' | '2fa-otp'>('details');
   const [identifier, setIdentifier] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -31,7 +31,12 @@ export function Login() {
     setSuccess('');
 
     try {
-      await login(identifier, password);
+      const res = await login(identifier, password);
+      if (res?.requires2FA) {
+        setRegisterEmail(res.email);
+        setSuccess(res.message || 'OTP sent to your email.');
+        setStep('2fa-otp');
+      }
     } catch (err: any) {
       if (err.response?.status === 403 && (err.response?.data?.code === 'PENDING_APPROVAL' || err.response?.data?.message?.includes('pending'))) {
         setError('Account is pending approval. Please wait for admin confirmation.');
@@ -46,6 +51,12 @@ export function Login() {
     try {
       if (credentialResponse.credential) {
         const result = await googleLogin(credentialResponse.credential);
+        if (result?.requires2FA) {
+          setRegisterEmail(result.email);
+          setSuccess(result.message || 'OTP sent to your email.');
+          setStep('2fa-otp');
+          return;
+        }
         if (result && result.status === 'pending') {
           setSuccess('Registration successful. Please wait for admin approval.');
           return;
@@ -276,6 +287,30 @@ export function Login() {
     }
   };
 
+  const handleVerify2FA = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError('');
+    setSuccess('');
+
+    if (!otp || otp.length !== 6) {
+      setError('Please enter a valid 6-digit OTP.');
+      return;
+    }
+
+    try {
+      const res = await fetch('/api/auth/verify-2fa', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: registerEmail, otp })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message);
+
+      setSessionFromOauth(data.token, data);
+    } catch (err: any) {
+      setError(err.message);
+    }
+  };
 
   const isRegister = mode === 'register';
 
@@ -582,7 +617,7 @@ export function Login() {
                 </button>
               </form>
             )
-          ) : (
+          ) : step === 'details' ? (
             // Login view
             <>
               <form onSubmit={handleLogin} className="space-y-4">
@@ -649,6 +684,31 @@ export function Login() {
                 </div>
               </div>
             </>
+          ) : (
+            <form onSubmit={handleVerify2FA} className="space-y-4">
+              <h3 className="text-center font-semibold text-[#001F3F]">Two-Factor Authentication</h3>
+              <p className="text-center text-sm text-gray-600">
+                Enter the 6-digit code sent to <span className="font-bold">{registerEmail}</span>
+              </p>
+              <div>
+                <input
+                  type="text"
+                  value={otp}
+                  onChange={(e) => setOtp(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                  className="w-full text-center text-2xl tracking-[0.5em] font-bold px-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#FFD700] focus:border-transparent outline-none"
+                  placeholder="000000"
+                  required
+                />
+              </div>
+              <button type="submit" className="w-full bg-[#001F3F] text-white py-2.5 rounded-lg hover:bg-[#003366] transition-colors">
+                Verify & Continue
+              </button>
+              <div className="flex justify-center mt-2">
+                <button type="button" onClick={() => setStep('details')} className="text-sm text-gray-500 hover:text-gray-700">
+                  Cancel
+                </button>
+              </div>
+            </form>
           )}
         </div>
 

@@ -5,7 +5,7 @@ import { User, StudentProfile } from '../types';
 interface AuthContextType {
   user: User | null;
   token: string | null;
-  login: (identifier: string, password: string) => Promise<void>;
+  login: (identifier: string, password: string) => Promise<any>;
   googleLogin: (credential: string) => Promise<any>;
   setSessionFromOauth: (token: string, apiUser: any) => void;
   updateProfile: (data: any) => Promise<any>;
@@ -91,8 +91,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setIsLoading(true);
     try {
       const res = await axios.post('/api/auth/login', { email: identifier, password });
-      // Backend returns flat object: { _id, name, email, role, token }
+      
+      if (res.data.requires2FA) {
+        return res.data;
+      }
+
       setSession(res.data.token, res.data);
+      return res.data;
     } finally {
       setIsLoading(false);
     }
@@ -103,7 +108,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       const res = await axios.post('/api/auth/google', { token: credential });
 
-
+      if (res.data.requires2FA) {
+        return res.data;
+      }
 
       setSession(res.data.token, res.data);
       return res.data;
