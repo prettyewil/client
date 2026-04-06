@@ -26,6 +26,7 @@ const initialForm = {
   urgency: 'low',
   status: 'pending',
   room_number: '',
+  syncToCalendar: false,
 };
 
 export function MaintenanceManagement() {
@@ -75,6 +76,7 @@ export function MaintenanceManagement() {
         urgency: req.urgency || 'low',
         status: req.status || 'pending',
         room_number: req.roomNumber || req.room_number || '', // Backend uses roomNumber
+        syncToCalendar: !!req.googleEventId,
       });
     } else {
       setEditingId(null);
@@ -102,7 +104,7 @@ export function MaintenanceManagement() {
   };
 
   const handleSubmit = async () => {
-    if (((user?.role === 'admin' || user?.role === 'super_admin') && !formData.student_id) || !formData.title || !formData.description) {
+    if (((user?.role === 'admin' || user?.role === 'super_admin') && !formData.student_id) || !formData.title.trim() || !formData.description.trim()) {
       Swal.fire('Missing fields', 'Title and description are required.', 'warning');
       return;
     }
@@ -368,6 +370,19 @@ export function MaintenanceManagement() {
                 </select>
               </div>
             )}
+            
+            <div className="flex items-center gap-2 mt-4 pt-4 border-t border-gray-100">
+                <input
+                    type="checkbox"
+                    id="syncToCalendar"
+                    checked={formData.syncToCalendar}
+                    onChange={(e) => setFormData({ ...formData, syncToCalendar: e.target.checked })}
+                    className="w-4 h-4 text-[#001F3F] rounded border-gray-300"
+                />
+                <Label htmlFor="syncToCalendar" className="cursor-pointer font-medium mb-0">
+                    Sync with Google Calendar
+                </Label>
+            </div>
           </div>
           <DialogFooter>
             <Button onClick={handleSubmit} className="bg-[#001F3F] text-white hover:bg-[#003366]">

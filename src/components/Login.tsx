@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { GoogleLogin } from '@react-oauth/google';
+import Swal from 'sweetalert2';
 import { Lock, Mail, AlertCircle, ShieldCheck, User, Briefcase } from 'lucide-react';
 
 export function Login() {
@@ -21,9 +22,22 @@ export function Login() {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const { login, googleLogin, isLoading, setSessionFromOauth } = useAuth();
-
   // To store email for OTP verification
   const [registerEmail, setRegisterEmail] = useState('');
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('timeout') === '1') {
+      Swal.fire({
+        icon: 'warning',
+        title: 'Session Expired',
+        text: 'Your session has timed out due to inactivity.',
+        confirmButtonColor: '#001F3F'
+      });
+      // Clean up URL
+      window.history.replaceState({}, document.title, '/login');
+    }
+  }, []);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();

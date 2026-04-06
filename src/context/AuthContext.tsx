@@ -60,6 +60,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [token, setToken] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isAppLoading, setIsAppLoading] = useState(true);
+  const [sessionTimeoutMs, setSessionTimeoutMs] = useState<number>(15 * 60 * 1000); // 15 mins default
+  const [lastActivity, setLastActivity] = useState<number>(Date.now());
 
   useEffect(() => {
     const stored = sessionStorage.getItem(STORAGE_KEY);
@@ -77,6 +79,52 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
     setIsAppLoading(false);
   }, []);
+
+  // Fetch settings whenever token changes to a valid one
+  useEffect(() => {
+    if (token) {
+      axios.get('/api/settings').then((res) => {
+        if (res.data && res.data.sessionTimeout) {
+          setSessionTimeoutMs(res.data.sessionTimeout * 60 * 1000);
+        }
+      }).catch(err => console.error('Failed to fetch settings for timeout:', err));
+    }
+  }, [token]);
+
+  // Activity tracker
+  useEffect(() => {
+    const handleActivity = () => {
+      setLastActivity(Date.now());
+    };
+
+    if (user && token) {
+      window.addEventListener('mousemove', handleActivity);
+      window.addEventListener('keydown', handleActivity);
+      window.addEventListener('scroll', handleActivity);
+      window.addEventListener('click', handleActivity);
+    }
+
+    return () => {
+      window.removeEventListener('mousemove', handleActivity);
+      window.removeEventListener('keydown', handleActivity);
+      window.removeEventListener('scroll', handleActivity);
+      window.removeEventListener('click', handleActivity);
+    };
+  }, [user, token]);
+
+  // Inactivity checker
+  useEffect(() => {
+    if (!user || !token) return;
+
+    const interval = setInterval(() => {
+      if (Date.now() - lastActivity > sessionTimeoutMs) {
+        logout();
+        window.location.href = '/login?timeout=1'; // Redirect or let protected route handle it
+      }
+    }, 10000); // Check every 10 seconds
+
+    return () => clearInterval(interval);
+  }, [user, token, lastActivity, sessionTimeoutMs]);
 
   const setSession = (nextToken: string, apiUser: any) => {
     console.log('setSession apiUser:', apiUser);

@@ -42,6 +42,9 @@ export function AttendanceManagement() {
   const [isScannerOpen, setIsScannerOpen] = useState(false);
   const [showMyQR, setShowMyQR] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
+  const [studentsList, setStudentsList] = useState<StudentOption[]>([]);
+  const [isManualModalOpen, setIsManualModalOpen] = useState(false);
+  const [manualStudentId, setManualStudentId] = useState('');
 
   useEffect(() => {
     if (user?.role !== 'student') {
@@ -53,6 +56,7 @@ export function AttendanceManagement() {
   const fetchTotalStudents = async () => {
     try {
       const res = await axios.get('/api/students');
+      setStudentsList(res.data);
       setTotalStudents(res.data.length);
     } catch (error) {
       console.error('Error fetching students', error);
@@ -113,22 +117,11 @@ export function AttendanceManagement() {
     }
   };
 
-  const handleScan = async (text: string) => {
-    if (!text) return;
-
+  const processAttendanceAction = async (studentId: string, studentName: string) => {
     try {
-      const data = JSON.parse(text);
-      if (!data.id) throw new Error('Invalid QR Code: Missing ID');
-
-      setIsScannerOpen(false);
-
       const today = new Date().toISOString().split('T')[0];
-      // Refresh logs for today to ensure we have latest status
       const res = await axios.get('/api/attendance', { params: { date: today } });
       const logs: AttendanceLogDto[] = res.data;
-
-      const studentId = data.id;
-      const studentName = data.name;
 
       const existingLog = logs.find((l) => {
         const sId = typeof l.student === 'string' ? l.student : l.student?._id;
@@ -155,12 +148,39 @@ export function AttendanceManagement() {
         `${type === 'check_in' ? `Check-In Recorded (${status.toUpperCase()})` : 'Check-Out Recorded'} for ${studentName}`,
         'success'
       );
-
     } catch (error: any) {
-      console.error('Scan Error', error);
-      const errorMessage = error?.response?.data?.message || error.message || 'Invalid QR Code or Scan Failed';
+      console.error('Attendance Error', error);
+      const errorMessage = error?.response?.data?.message || error.message || 'Operation Failed';
       Swal.fire('Error', errorMessage, 'error');
     }
+  };
+
+  const handleScan = async (text: string) => {
+    if (!text) return;
+
+    try {
+      const data = JSON.parse(text);
+      if (!data.id) throw new Error('Invalid QR Code: Missing ID');
+
+      setIsScannerOpen(false);
+      await processAttendanceAction(data.id, data.name);
+    } catch (error: any) {
+      console.error('Scan Error', error);
+      Swal.fire('Error', 'Invalid QR Code or Scan Failed', 'error');
+    }
+  };
+
+  const handleManualSubmit = async () => {
+    if (!manualStudentId) {
+       Swal.fire('Error', 'Please select a student', 'warning');
+       return;
+    }
+    const student = studentsList.find(s => s._id === manualStudentId);
+    if (!student) return;
+
+    setIsManualModalOpen(false);
+    await processAttendanceAction(student._id, student.name);
+    setManualStudentId('');
   };
 
   const formatTime = (time?: string | null) => {
@@ -266,6 +286,14 @@ export function AttendanceManagement() {
             </Button>
           )}
           <Button
+            onClick={() => setIsManualModalOpen(true)}
+            variant="outline"
+            className="w-full md:w-auto flex items-center justify-center gap-2 border-[#001F3F] text-[#001F3F] hover:bg-gray-50"
+          >
+            <UserCheck className="w-5 h-5" />
+            Manual Entry
+          </Button>
+          <Button
             onClick={() => setIsScannerOpen(true)}
             className="w-full md:w-auto bg-[#001F3F] text-white hover:bg-[#003366] flex items-center justify-center gap-2"
           >
@@ -277,7 +305,7 @@ export function AttendanceManagement() {
 
       {/* Scanner Modal */}
       <Dialog open={isScannerOpen} onOpenChange={setIsScannerOpen}>
-        <DialogContent className="sm:max-w-md">
+        <DialogContent className="sm:max-w-md bg-white">
           <DialogHeader>
             <DialogTitle>Scan Student QR</DialogTitle>
           </DialogHeader>
@@ -299,7 +327,7 @@ export function AttendanceManagement() {
 
       {/* My QR Code Modal */}
       <Dialog open={showMyQR} onOpenChange={setShowMyQR}>
-        <DialogContent className="sm:max-w-md flex flex-col items-center">
+        <DialogContent className="sm:max-w-md flex flex-col items-center bg-white">
           <DialogHeader>
              <DialogTitle>My QR Code</DialogTitle>
           </DialogHeader>
@@ -316,6 +344,31 @@ export function AttendanceManagement() {
             />
           </div>
           <p className="mt-4 text-[#001F3F] text-center text-sm font-medium">Scan this to log your attendance.</p>
+        </DialogContent>
+      </Dialog>
+
+      {/* Manual Entry Modal */}
+      <Dialog open={isManualModalOpen} onOpenChange={setIsManualModalOpen}>
+        <DialogContent className="sm:max-w-md bg-white">
+          <DialogHeader>
+            <DialogTitle>Manual Attendance Entry</DialogTitle>
+          </DialogHeader>
+          <div className="flex flex-col gap-4 py-4">
+            <label className="text-sm font-medium text-gray-700">Select Student</label>
+            <select
+              className="w-full border rounded p-2 text-sm"
+              value={manualStudentId}
+              onChange={(e) => setManualStudentId(e.target.value)}
+            >
+              <option value="">-- Choose a Student --</option>
+              {studentsList.map(s => (
+                <option key={s._id} value={s._id}>{s.name} ({s.studentProfile?.roomNumber || 'No Room'})</option>
+              ))}
+            </select>
+            <Button className="bg-[#001F3F] text-white hover:bg-[#003366] mt-4" onClick={handleManualSubmit}>
+              Submit Attendance
+            </Button>
+          </div>
         </DialogContent>
       </Dialog>
 

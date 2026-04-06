@@ -374,10 +374,10 @@ export function UserManagement() {
         const term = searchTerm.toLowerCase();
         if (activeUserTab === 'students' || activeUserTab === 'pending') {
             const s = item as Student;
-            return s.name.toLowerCase().includes(term) ||
+            return s.name?.toLowerCase().includes(term) ||
                 s.studentProfile?.roomNumber?.toLowerCase().includes(term) ||
                 (s.studentId || s.student_id)?.toLowerCase().includes(term) ||
-                s.email.toLowerCase().includes(term);
+                s.email?.toLowerCase().includes(term);
         } else {
             const s = item as Staff;
             const staffName = s.name || `${s.firstName || ''} ${s.lastName || ''}`.trim() || '';
@@ -774,18 +774,35 @@ export function UserManagement() {
                             <Input value={studentFormData.phone_number} onChange={e => setStudentFormData({ ...studentFormData, phone_number: e.target.value })} placeholder="e.g. 0912 345 6789" />
                         </div>
 
-                        <div>
+                        <div className="col-span-1 md:col-span-2">
                             <Label>Room</Label>
-                            <select
-                                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-                                value={studentFormData.room_id}
-                                onChange={e => setStudentFormData({ ...studentFormData, room_id: e.target.value })}
-                            >
-                                <option value="">Select Room</option>
-                                {rooms
-                                    .filter((room) => room._id === studentFormData.room_id || (room.status !== 'Occupied' && (room.students_count || 0) < room.capacity))
-                                    .map(r => <option key={r._id} value={r._id}>Room {r.roomNumber}</option>)}
-                            </select>
+                            <div className="flex gap-2 items-center">
+                                <select
+                                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                                    value={studentFormData.room_id}
+                                    onChange={e => setStudentFormData({ ...studentFormData, room_id: e.target.value })}
+                                >
+                                    <option value="">Select Room</option>
+                                    {rooms
+                                        .filter((room) => room._id === studentFormData.room_id || (room.status !== 'Occupied' && (room.students_count || 0) < room.capacity))
+                                        .map(r => <option key={r._id} value={r._id}>Room {r.roomNumber}</option>)}
+                                </select>
+                                <Button 
+                                    type="button" 
+                                    variant="outline" 
+                                    onClick={() => {
+                                        const availableRoom = rooms.find(room => room._id !== studentFormData.room_id && room.status !== 'Occupied' && (room.students_count || 0) < room.capacity);
+                                        if (availableRoom) {
+                                            setStudentFormData({ ...studentFormData, room_id: availableRoom._id });
+                                        } else {
+                                            Swal.fire('No Rooms', 'There are no other available rooms at the moment.', 'info');
+                                        }
+                                    }}
+                                    className="whitespace-nowrap bg-teal-50 text-teal-700 hover:bg-teal-100 border-teal-200 h-10"
+                                >
+                                    Assign Available Room
+                                </Button>
+                            </div>
                         </div>
                     </div>
                     <DialogFooter>
@@ -884,7 +901,7 @@ export function UserManagement() {
                                     onChange={(e) => setRoleEditData({ ...roleEditData, newRole: e.target.value })}
                                 >
                                     <option value="staff">Staff</option>
-                                    <option value="manager">Manager</option>
+                                    {isSuperAdmin && <option value="manager">Manager</option>}
                                     {isSuperAdmin && <option value="admin">Admin</option>}
                                 </select>
                             </div>

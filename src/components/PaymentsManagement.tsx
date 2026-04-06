@@ -8,6 +8,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogD
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Label } from './ui/label';
+import { useAuth } from '../context/AuthContext';
 import { Textarea } from './ui/textarea';
 import { usePagination } from '../hooks/usePagination';
 import {
@@ -36,6 +37,8 @@ const emptyPayment = {
 };
 
 export function PaymentsManagement() {
+  const { user } = useAuth();
+  const isStaff = user?.role === 'staff';
   const [payments, setPayments] = useState<any[]>([]);
   const [students, setStudents] = useState<any[]>([]);
   const [rooms, setRooms] = useState<any[]>([]);
@@ -388,19 +391,23 @@ export function PaymentsManagement() {
           >
             <FileText className="mr-1 md:mr-2 h-3 w-3 md:h-4 md:w-4" /> Export
           </Button>
-          <Button
-            onClick={openBulkModal}
-            variant="outline"
-            className="border-[#001F3F] text-[#001F3F] text-xs md:text-sm px-2 md:px-4 flex-1 md:flex-none"
-          >
-            <CopyPlus className="mr-1 md:mr-2 h-3 w-3 md:h-4 md:w-4" /> Bulk Add
-          </Button>
-          <Button
-            onClick={() => openModal()}
-            className="bg-[#FFD700] text-[#001F3F] hover:bg-[#e6c200] text-xs md:text-sm px-2 md:px-4 flex-1 md:flex-none"
-          >
-            <Plus className="mr-1 md:mr-2 h-3 w-3 md:h-4 md:w-4" /> Record
-          </Button>
+          {!isStaff && (
+            <>
+              <Button
+                onClick={openBulkModal}
+                variant="outline"
+                className="border-[#001F3F] text-[#001F3F] text-xs md:text-sm px-2 md:px-4 flex-1 md:flex-none"
+              >
+                <CopyPlus className="mr-1 md:mr-2 h-3 w-3 md:h-4 md:w-4" /> Bulk Add
+              </Button>
+              <Button
+                onClick={() => openModal()}
+                className="bg-[#FFD700] text-[#001F3F] hover:bg-[#e6c200] text-xs md:text-sm px-2 md:px-4 flex-1 md:flex-none"
+              >
+                <Plus className="mr-1 md:mr-2 h-3 w-3 md:h-4 md:w-4" /> Record
+              </Button>
+            </>
+          )}
         </div>
       </div>
 
@@ -499,7 +506,7 @@ export function PaymentsManagement() {
                     <Edit className="w-4 h-4 text-blue-600" />
                   </Button>
 
-                  {(p.status === 'pending' || p.status === 'submitted') && (
+                  {(p.status === 'pending' || p.status === 'submitted') && !isStaff && (
                     <Button
                       size="sm"
                       variant="ghost"
@@ -510,15 +517,17 @@ export function PaymentsManagement() {
                     </Button>
                   )}
 
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    className="text-red-500 hover:text-red-700"
-                    onClick={() => handleDelete(p._id || p.id)}
-                    title="Delete Record"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </Button>
+                  {!isStaff && (
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      className="text-red-500 hover:text-red-700"
+                      onClick={() => handleDelete(p._id || p.id)}
+                      title="Delete Record"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </Button>
+                  )}
                 </td>
               </tr>
             ))}
@@ -625,7 +634,7 @@ export function PaymentsManagement() {
                   <Edit className="w-4 h-4" />
                 </Button>
 
-                {(p.status === 'pending' || p.status === 'submitted') && (
+                {(p.status === 'pending' || p.status === 'submitted') && !isStaff && (
                   <Button
                     size="sm"
                     variant="ghost"
@@ -636,14 +645,16 @@ export function PaymentsManagement() {
                   </Button>
                 )}
 
-                <Button
-                  size="sm"
-                  variant="ghost"
-                  className="h-8 w-8 text-red-500 hover:text-red-700"
-                  onClick={() => handleDelete(p._id || p.id)}
-                >
-                  <Trash2 className="w-4 h-4" />
-                </Button>
+                {!isStaff && (
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    className="h-8 w-8 text-red-500 hover:text-red-700"
+                    onClick={() => handleDelete(p._id || p.id)}
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </Button>
+                )}
               </div>
             </div>
           </div>
@@ -920,49 +931,53 @@ export function PaymentsManagement() {
           </div>
 
           <DialogFooter className="flex justify-center gap-2 sm:justify-center">
-            <Button
-              className="bg-[#001F3F] hover:bg-[#003366] text-white min-w-[100px]"
-              onClick={async () => {
-                if (!viewingPayment) return;
-                try {
-                  await axios.patch(`/api/payments/${viewingPayment._id || viewingPayment.id}`, { status: 'paid' });
-                  setIsReceiptModalOpen(false);
-                  fetchPayments();
-                  Swal.fire('Updated', 'Payment marked as Paid.', 'success');
-                } catch (e) {
-                  console.error(e);
-                  Swal.fire('Error', 'Failed to update status.', 'error');
-                }
-              }}
-            >
-              Paid
-            </Button>
-            <Button
-              className="bg-red-600 hover:bg-red-700 text-white min-w-[100px]"
-              onClick={async () => {
-                if (!viewingPayment) return;
-                const { value: text } = await Swal.fire({
-                  title: 'Reject Payment',
-                  input: 'textarea',
-                  inputLabel: 'Reason for rejection',
-                  inputPlaceholder: 'Enter reason here...',
-                  showCancelButton: true
-                });
-                if (text) {
-                  try {
-                    await axios.patch(`/api/payments/${viewingPayment._id || viewingPayment.id}`, { status: 'rejected', notes: text });
-                    setIsReceiptModalOpen(false);
-                    fetchPayments();
-                    Swal.fire('Rejected', 'Payment was rejected.', 'success');
-                  } catch (e) {
-                    console.error(e);
-                    Swal.fire('Error', 'Failed to update status.', 'error');
-                  }
-                }
-              }}
-            >
-              Reject
-            </Button>
+            {!isStaff && (
+              <>
+                <Button
+                  className="bg-[#001F3F] hover:bg-[#003366] text-white min-w-[100px]"
+                  onClick={async () => {
+                    if (!viewingPayment) return;
+                    try {
+                      await axios.patch(`/api/payments/${viewingPayment._id || viewingPayment.id}`, { status: 'paid' });
+                      setIsReceiptModalOpen(false);
+                      fetchPayments();
+                      Swal.fire('Updated', 'Payment marked as Paid.', 'success');
+                    } catch (e) {
+                      console.error(e);
+                      Swal.fire('Error', 'Failed to update status.', 'error');
+                    }
+                  }}
+                >
+                  Paid
+                </Button>
+                <Button
+                  className="bg-red-600 hover:bg-red-700 text-white min-w-[100px]"
+                  onClick={async () => {
+                    if (!viewingPayment) return;
+                    const { value: text } = await Swal.fire({
+                      title: 'Reject Payment',
+                      input: 'textarea',
+                      inputLabel: 'Reason for rejection',
+                      inputPlaceholder: 'Enter reason here...',
+                      showCancelButton: true
+                    });
+                    if (text) {
+                      try {
+                        await axios.patch(`/api/payments/${viewingPayment._id || viewingPayment.id}`, { status: 'rejected', notes: text });
+                        setIsReceiptModalOpen(false);
+                        fetchPayments();
+                        Swal.fire('Rejected', 'Payment was rejected.', 'success');
+                      } catch (e) {
+                        console.error(e);
+                        Swal.fire('Error', 'Failed to update status.', 'error');
+                      }
+                    }
+                  }}
+                >
+                  Reject
+                </Button>
+              </>
+            )}
             <Button
               className="bg-gray-200 hover:bg-gray-300 text-gray-800 min-w-[100px]"
               onClick={() => setIsReceiptModalOpen(false)}
