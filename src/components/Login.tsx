@@ -444,15 +444,15 @@ export function Login() {
             step === 'details' ? (
               <form onSubmit={handleLoginOtpRequest} className="space-y-4">
                 <h3 className="text-center font-semibold text-[#001F3F]">Email OTP Login</h3>
-                <p className="text-sm text-center text-gray-600">Enter your registered email address.</p>
+                <p className="text-sm text-center text-gray-600">Enter your email or Student ID.</p>
                 <div className="relative">
                   <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
                   <input
-                    type="email"
+                    type="text"
                     value={identifier}
                     onChange={(e) => setIdentifier(e.target.value)}
                     className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#FFD700] focus:border-transparent outline-none"
-                    placeholder="Email Address"
+                    placeholder="Email or Student ID"
                     required
                   />
                 </div>
