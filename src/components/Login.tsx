@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { GoogleLogin } from '@react-oauth/google';
 import Swal from 'sweetalert2';
-import { Lock, Mail, AlertCircle, ShieldCheck, User, Briefcase } from 'lucide-react';
+import { Lock, Mail, AlertCircle, ShieldCheck, User, Briefcase, Loader2 } from 'lucide-react';
 
 export function Login() {
   const [mode, setMode] = useState<'login' | 'register' | 'forgot-password' | 'login-otp'>('login');
@@ -21,6 +21,7 @@ export function Login() {
   const [newPassword, setNewPassword] = useState('');
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  const [isProcessing, setIsProcessing] = useState(false);
   const { login, googleLogin, isLoading, setSessionFromOauth } = useAuth();
   // To store email for OTP verification
   const [registerEmail, setRegisterEmail] = useState('');
@@ -108,6 +109,7 @@ export function Login() {
       return;
     }
 
+    setIsProcessing(true);
     try {
       const res = await fetch('/api/auth/register', {
         method: 'POST',
@@ -142,6 +144,8 @@ export function Login() {
 
     } catch (err: any) {
       setError(err.message || 'Registration failed');
+    } finally {
+      setIsProcessing(false);
     }
   };
 
@@ -155,6 +159,7 @@ export function Login() {
       return;
     }
 
+    setIsProcessing(true);
     try {
       const res = await fetch('/api/auth/verify-otp', {
         method: 'POST',
@@ -178,6 +183,8 @@ export function Login() {
       }
     } catch (err: any) {
       setError(err.message || 'Verification failed');
+    } finally {
+      setIsProcessing(false);
     }
   };
 
@@ -186,6 +193,7 @@ export function Login() {
     setError('');
     setSuccess('');
 
+    setIsProcessing(true);
     try {
       const res = await fetch('/api/auth/forgot-password', {
         method: 'POST',
@@ -200,6 +208,8 @@ export function Login() {
       setStep('reset-otp');
     } catch (err: any) {
       setError(err.message);
+    } finally {
+      setIsProcessing(false);
     }
   };
 
@@ -213,6 +223,7 @@ export function Login() {
       return;
     }
 
+    setIsProcessing(true);
     try {
       const res = await fetch('/api/auth/verify-reset-otp', {
         method: 'POST',
@@ -226,6 +237,8 @@ export function Login() {
       setStep('reset-password');
     } catch (err: any) {
       setError(err.message);
+    } finally {
+      setIsProcessing(false);
     }
   };
 
@@ -233,6 +246,7 @@ export function Login() {
     e.preventDefault();
     setError('');
 
+    setIsProcessing(true);
     try {
       const res = await fetch('/api/auth/reset-password', {
         method: 'POST',
@@ -251,6 +265,8 @@ export function Login() {
       setStep('details');
     } catch (err: any) {
       setError(err.message);
+    } finally {
+      setIsProcessing(false);
     }
   };
 
@@ -259,6 +275,7 @@ export function Login() {
     setError('');
     setSuccess('');
 
+    setIsProcessing(true);
     try {
       const res = await fetch('/api/auth/login-otp-request', {
         method: 'POST',
@@ -273,6 +290,8 @@ export function Login() {
       setStep('otp');
     } catch (err: any) {
       setError(err.message);
+    } finally {
+      setIsProcessing(false);
     }
   };
 
@@ -286,6 +305,7 @@ export function Login() {
       return;
     }
 
+    setIsProcessing(true);
     try {
       const res = await fetch('/api/auth/login-otp-verify', {
         method: 'POST',
@@ -298,6 +318,8 @@ export function Login() {
       setSessionFromOauth(data.token, data);
     } catch (err: any) {
       setError(err.message);
+    } finally {
+      setIsProcessing(false);
     }
   };
 
@@ -311,6 +333,7 @@ export function Login() {
       return;
     }
 
+    setIsProcessing(true);
     try {
       const res = await fetch('/api/auth/verify-2fa', {
         method: 'POST',
@@ -323,6 +346,8 @@ export function Login() {
       setSessionFromOauth(data.token, data);
     } catch (err: any) {
       setError(err.message);
+    } finally {
+      setIsProcessing(false);
     }
   };
 
@@ -393,8 +418,9 @@ export function Login() {
                     required
                   />
                 </div>
-                <button type="submit" className="w-full bg-[#001F3F] text-white py-2.5 rounded-lg hover:bg-[#003366]">
-                  Send OTP
+                <button type="submit" disabled={isProcessing} className="w-full bg-[#001F3F] text-white py-2.5 rounded-lg hover:bg-[#003366] flex items-center justify-center gap-2 disabled:opacity-50">
+                  {isProcessing && <Loader2 className="w-5 h-5 animate-spin" />}
+                  {isProcessing ? 'Sending OTP...' : 'Send OTP'}
                 </button>
                 <button type="button" onClick={() => setMode('login')} className="w-full text-sm text-gray-500 hover:text-gray-700">
                   Back to Login
@@ -414,8 +440,9 @@ export function Login() {
                     required
                   />
                 </div>
-                <button type="submit" className="w-full bg-[#001F3F] text-white py-2.5 rounded-lg hover:bg-[#003366]">
-                  Verify OTP
+                <button type="submit" disabled={isProcessing} className="w-full bg-[#001F3F] text-white py-2.5 rounded-lg hover:bg-[#003366] flex items-center justify-center gap-2 disabled:opacity-50">
+                  {isProcessing && <Loader2 className="w-5 h-5 animate-spin" />}
+                  {isProcessing ? 'Verifying...' : 'Verify OTP'}
                 </button>
                 <button type="button" onClick={() => setStep('details')} className="w-full text-sm text-gray-500 hover:text-gray-700">
                   Back
@@ -435,8 +462,9 @@ export function Login() {
                     required
                   />
                 </div>
-                <button type="submit" className="w-full bg-[#001F3F] text-white py-2.5 rounded-lg hover:bg-[#003366]">
-                  Reset Password
+                <button type="submit" disabled={isProcessing} className="w-full bg-[#001F3F] text-white py-2.5 rounded-lg hover:bg-[#003366] flex items-center justify-center gap-2 disabled:opacity-50">
+                  {isProcessing && <Loader2 className="w-5 h-5 animate-spin" />}
+                  {isProcessing ? 'Processing...' : 'Reset Password'}
                 </button>
               </form>
             )
@@ -456,8 +484,9 @@ export function Login() {
                     required
                   />
                 </div>
-                <button type="submit" className="w-full bg-[#001F3F] text-white py-2.5 rounded-lg hover:bg-[#003366] transition-colors">
-                  Send OTP
+                <button type="submit" disabled={isProcessing} className="w-full bg-[#001F3F] text-white py-2.5 rounded-lg hover:bg-[#003366] transition-colors flex items-center justify-center gap-2 disabled:opacity-50">
+                  {isProcessing && <Loader2 className="w-5 h-5 animate-spin" />}
+                  {isProcessing ? 'Sending OTP...' : 'Send OTP'}
                 </button>
                 <div className="flex justify-center mt-2">
                   <button type="button" onClick={() => setMode('login')} className="text-sm text-gray-500 hover:text-gray-700">
@@ -481,8 +510,9 @@ export function Login() {
                     required
                   />
                 </div>
-                <button type="submit" className="w-full bg-[#001F3F] text-white py-2.5 rounded-lg hover:bg-[#003366] transition-colors">
-                  Verify & Login
+                <button type="submit" disabled={isProcessing} className="w-full bg-[#001F3F] text-white py-2.5 rounded-lg hover:bg-[#003366] transition-colors flex items-center justify-center gap-2 disabled:opacity-50">
+                  {isProcessing && <Loader2 className="w-5 h-5 animate-spin" />}
+                  {isProcessing ? 'Verifying...' : 'Verify & Login'}
                 </button>
                 <div className="flex justify-center mt-2">
                   <button type="button" onClick={() => setStep('details')} className="text-sm text-gray-500 hover:text-gray-700">
@@ -594,10 +624,11 @@ export function Login() {
                 </div>
                 <button
                   type="submit"
-                  disabled={isLoading}
-                  className="w-full bg-[#001F3F] text-white py-2.5 rounded-lg hover:bg-[#003366] transition-colors disabled:opacity-50"
+                  disabled={isProcessing}
+                  className="w-full bg-[#001F3F] text-white py-2.5 rounded-lg hover:bg-[#003366] transition-colors flex items-center justify-center gap-2 disabled:opacity-50"
                 >
-                  {isLoading ? 'Sending OTP...' : 'Verify Account'}
+                  {isProcessing && <Loader2 className="w-5 h-5 animate-spin" />}
+                  {isProcessing ? 'Sending OTP...' : 'Verify Account'}
                 </button>
               </form>
             ) : (
@@ -617,10 +648,11 @@ export function Login() {
                 </div>
                 <button
                   type="submit"
-                  disabled={isLoading}
-                  className="w-full bg-[#001F3F] text-white py-2.5 rounded-lg hover:bg-[#003366] transition-colors disabled:opacity-50"
+                  disabled={isProcessing}
+                  className="w-full bg-[#001F3F] text-white py-2.5 rounded-lg hover:bg-[#003366] transition-colors flex items-center justify-center gap-2 disabled:opacity-50"
                 >
-                  {isLoading ? 'Verifying...' : 'Verify & Login'}
+                  {isProcessing && <Loader2 className="w-5 h-5 animate-spin" />}
+                  {isProcessing ? 'Verifying...' : 'Verify & Login'}
                 </button>
                 <button
                   type="button"
@@ -683,8 +715,9 @@ export function Login() {
                 <button
                   type="submit"
                   disabled={isLoading}
-                  className="w-full bg-[#FFD700] text-[#001F3F] py-3 rounded-lg hover:bg-[#FFC700] transition-colors disabled:opacity-50"
+                  className="w-full bg-[#FFD700] text-[#001F3F] py-3 rounded-lg hover:bg-[#FFC700] transition-colors flex items-center justify-center gap-2 disabled:opacity-50"
                 >
+                  {isLoading && <Loader2 className="w-5 h-5 animate-spin" />}
                   {isLoading ? 'Signing in...' : 'Sign In'}
                 </button>
               </form>
@@ -714,8 +747,9 @@ export function Login() {
                   required
                 />
               </div>
-              <button type="submit" className="w-full bg-[#001F3F] text-white py-2.5 rounded-lg hover:bg-[#003366] transition-colors">
-                Verify & Continue
+              <button type="submit" disabled={isProcessing} className="w-full bg-[#001F3F] text-white py-2.5 rounded-lg hover:bg-[#003366] transition-colors flex items-center justify-center gap-2 disabled:opacity-50">
+                {isProcessing && <Loader2 className="w-5 h-5 animate-spin" />}
+                {isProcessing ? 'Verifying...' : 'Verify & Continue'}
               </button>
               <div className="flex justify-center mt-2">
                 <button type="button" onClick={() => setStep('details')} className="text-sm text-gray-500 hover:text-gray-700">
