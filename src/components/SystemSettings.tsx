@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import Swal from 'sweetalert2';
 import { useAuth } from '../context/AuthContext';
-import { Settings, Save, Clock, Database, ShieldAlert, UserPlus } from 'lucide-react';
+import { Settings, Save, Clock, Database, ShieldAlert, UserPlus, Calendar } from 'lucide-react';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Label } from './ui/label';
@@ -20,6 +20,7 @@ export function SystemSettings() {
         requireUppercase: true,
         requireNumber: true,
         requireSpecialChar: true,
+        enableGoogleCalendar: true,
     });
     const [loading, setLoading] = useState(false);
 
@@ -40,6 +41,7 @@ export function SystemSettings() {
                     requireUppercase: res.data.requireUppercase !== false,
                     requireNumber: res.data.requireNumber !== false,
                     requireSpecialChar: res.data.requireSpecialChar !== false,
+                    enableGoogleCalendar: res.data.enableGoogleCalendar !== false,
                 });
             }
         } catch (error) {
@@ -228,6 +230,31 @@ export function SystemSettings() {
                             </Label>
                             <p className="text-xs text-gray-500 mt-1">
                                 When disabled, the registration page will be blocked.
+                            </p>
+                        </div>
+                    </div>
+                </section>
+
+                {/* Google Calendar Integration */}
+                <section>
+                    <h2 className="text-lg font-semibold border-b pb-2 mb-4 flex items-center gap-2 text-gray-800">
+                        <Calendar className="w-5 h-5 text-indigo-500" /> Google Calendar Integration
+                    </h2>
+                    <div className="flex items-start gap-3">
+                        <input
+                            type="checkbox"
+                            id="enableGoogleCalendar"
+                            checked={settings.enableGoogleCalendar}
+                            onChange={(e) => setSettings({ ...settings, enableGoogleCalendar: e.target.checked })}
+                            className="w-5 h-5 text-[#001F3F] rounded mt-1 cursor-pointer border-gray-300 focus:ring-[#001F3F]"
+                        />
+                        <div>
+                            <Label htmlFor="enableGoogleCalendar" className="font-medium text-gray-800 block cursor-pointer">
+                                Enable Google Calendar Sync
+                            </Label>
+                            <p className="text-xs text-gray-500 mt-1">
+                                When enabled, tasks and maintenance requests can be synced to Google Calendar.
+                                When disabled, the "Sync with Google Calendar" option will have no effect.
                             </p>
                         </div>
                     </div>
