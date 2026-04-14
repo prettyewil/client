@@ -73,8 +73,8 @@ function AppContent() {
     return <Login />;
   }
 
-  // Pending/Unverified users logic
-  if (userStatus === 'pending' || userStatus === 'unverified') {
+  // Pending/Unverified users logic (seed test accounts go straight to dashboard)
+  if (!user.skipEmailOtp && (userStatus === 'pending' || userStatus === 'unverified')) {
     // If student ID is missing, they need to complete their profile
     if (!user.studentId) {
       return <CompleteProfile />;

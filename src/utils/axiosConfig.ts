@@ -7,7 +7,10 @@ NProgress.configure({ showSpinner: false });
 
 const setupAxiosInterceptors = () => {
     // Set base URL from environment variable if available
-    axios.defaults.baseURL = import.meta.env.VITE_API_BASE_URL || '';
+    axios.defaults.baseURL =
+        import.meta.env.VITE_API_BASE_URL ||
+        import.meta.env.VITE_API_URL ||
+        '';
 
     // Request interceptor
     axios.interceptors.request.use(

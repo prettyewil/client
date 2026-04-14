@@ -57,7 +57,12 @@ export function Login() {
         setError('Account is pending approval. Please wait for admin confirmation.');
         return;
       }
-      const message = err.response?.data?.message || 'Invalid credentials';
+      const apiMsg = err.response?.data?.message;
+      const message =
+        apiMsg ||
+        (err.code === 'ERR_NETWORK' || err.message === 'Network Error'
+          ? 'Cannot reach the server. Start the API (port 5000) and use the Vite dev server so /api is proxied.'
+          : err.message || 'Invalid credentials');
       setError(String(message));
     }
   };

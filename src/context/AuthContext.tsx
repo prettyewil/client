@@ -46,7 +46,8 @@ function mapApiUser(apiUser: any): User {
     role: apiUser.role,
     status: apiUser.status || 'approved', // Default to approved for existing users
     studentProfile: studentProfile,
-    studentId: apiUser.studentId
+    studentId: apiUser.studentId,
+    skipEmailOtp: apiUser.skipEmailOtp === true,
   }
 }
 
@@ -64,20 +65,48 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [lastActivity, setLastActivity] = useState<number>(Date.now());
 
   useEffect(() => {
-    const stored = sessionStorage.getItem(STORAGE_KEY);
-    if (stored) {
-      const parsed = JSON.parse(stored);
-      if (parsed.token) {
-        setUser(parsed.user);
-        setToken(parsed.token);
-        axios.defaults.headers.common.Authorization = `Bearer ${parsed.token}`;
-      } else {
-        sessionStorage.removeItem(STORAGE_KEY);
-        setUser(null);
-        setToken(null);
+    let cancelled = false;
+
+    const restoreSession = async () => {
+      const stored = sessionStorage.getItem(STORAGE_KEY);
+      if (!stored) {
+        if (!cancelled) setIsAppLoading(false);
+        return;
       }
-    }
-    setIsAppLoading(false);
+      const parsed = JSON.parse(stored);
+      if (!parsed.token) {
+        sessionStorage.removeItem(STORAGE_KEY);
+        if (!cancelled) {
+          setUser(null);
+          setToken(null);
+          setIsAppLoading(false);
+        }
+        return;
+      }
+
+      axios.defaults.headers.common.Authorization = `Bearer ${parsed.token}`;
+      if (!cancelled) setToken(parsed.token);
+
+      try {
+        const { data } = await axios.get('/api/auth/me');
+        if (!cancelled) {
+          const mapped = mapApiUser(data);
+          setUser(mapped);
+          persistSession(parsed.token, mapped);
+        }
+      } catch {
+        if (!cancelled) {
+          setUser(parsed.user);
+        }
+      } finally {
+        if (!cancelled) setIsAppLoading(false);
+      }
+    };
+
+    void restoreSession();
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   // Fetch settings whenever token changes to a valid one
@@ -138,7 +167,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const login = async (identifier: string, password: string) => {
     setIsLoading(true);
     try {
-      const res = await axios.post('/api/auth/login', { email: identifier, password });
+      const email = identifier.trim();
+      const res = await axios.post('/api/auth/login', { email, password });
       
       if (res.data.requires2FA) {
         return res.data;

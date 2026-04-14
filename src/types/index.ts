@@ -11,6 +11,8 @@ export interface User {
   studentProfile?: StudentProfile;
   studentId?: string;
   status?: 'pending' | 'approved' | 'rejected';
+  /** Seeded test accounts: skip pending gates and go to main dashboard */
+  skipEmailOtp?: boolean;
 }
 
 export interface StudentProfile {
