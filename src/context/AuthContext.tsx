@@ -44,7 +44,12 @@ function mapApiUser(apiUser: any): User {
     middleInitial: apiUser.middleInitial,
     email: apiUser.email,
     role: (apiUser.role != null && apiUser.role !== ''
-      ? String(apiUser.role).toLowerCase().replace(/\s+/g, '_')
+      ? (() => {
+          const r = String(apiUser.role).toLowerCase().replace(/\s+/g, '_');
+          if (r === 'super_admin') return 'admin';
+          if (r === 'admin') return 'manager';
+          return r;
+        })()
       : 'student') as UserRole,
     status: apiUser.status || 'approved', // Default to approved for existing users
     studentProfile: studentProfile,
