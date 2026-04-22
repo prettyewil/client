@@ -7,7 +7,7 @@ import { StudentPayments } from './StudentPayments';
 interface StudentPayment {
   id: number;
   amount: number;
-  status: 'paid' | 'pending' | 'overdue' | 'verified';
+  status: 'paid' | 'pending' | 'overdue' | 'verified' | 'rejected' | 'submitted';
 }
 
 interface StudentRequest {

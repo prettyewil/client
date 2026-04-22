@@ -208,6 +208,11 @@ function StudentProfile() {
       return;
     }
 
+    if (!formData.email.endsWith('@student.buksu.edu.ph')) {
+      Swal.fire('Error', 'Email must end with @student.buksu.edu.ph', 'error');
+      return;
+    }
+
     try {
       const payload: any = {
         name: formData.name,
@@ -256,7 +261,7 @@ function StudentProfile() {
                   type="text"
                   className="w-full px-3 py-2 border rounded"
                   value={formData.name}
-                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                  onChange={(e) => setFormData({ ...formData, name: e.target.value.replace(/[^a-zA-Z\sñÑ-]/g, '') })}
                 />
               </div>
               <div>
@@ -265,7 +270,7 @@ function StudentProfile() {
                   type="text"
                   className="w-full px-3 py-2 border rounded"
                   value={formData.studentId}
-                  onChange={(e) => setFormData({ ...formData, studentId: e.target.value })}
+                  onChange={(e) => setFormData({ ...formData, studentId: e.target.value.replace(/[^0-9-]/g, '') })}
                 />
               </div>
               <div>
@@ -283,7 +288,7 @@ function StudentProfile() {
                   type="text"
                   className="w-full px-3 py-2 border rounded"
                   value={formData.phoneNumber}
-                  onChange={(e) => setFormData({ ...formData, phoneNumber: e.target.value })}
+                  onChange={(e) => setFormData({ ...formData, phoneNumber: e.target.value.replace(/[^0-9+ ]/g, '') })}
                 />
               </div>
               <div>
@@ -292,7 +297,7 @@ function StudentProfile() {
                   type="text"
                   className="w-full px-3 py-2 border rounded"
                   value={formData.emergencyContactName}
-                  onChange={(e) => setFormData({ ...formData, emergencyContactName: e.target.value })}
+                  onChange={(e) => setFormData({ ...formData, emergencyContactName: e.target.value.replace(/[^a-zA-Z\sñÑ-]/g, '') })}
                 />
               </div>
               <div>
@@ -301,7 +306,7 @@ function StudentProfile() {
                   type="text"
                   className="w-full px-3 py-2 border rounded"
                   value={formData.emergencyContactPhone}
-                  onChange={(e) => setFormData({ ...formData, emergencyContactPhone: e.target.value })}
+                  onChange={(e) => setFormData({ ...formData, emergencyContactPhone: e.target.value.replace(/[^0-9+ ]/g, '') })}
                 />
               </div>
             </div>

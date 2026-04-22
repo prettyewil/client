@@ -7,7 +7,7 @@ import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Label } from './ui/label';
 import { useAuth } from '../context/AuthContext';
-import { Tabs } from './ui/Tabs';
+import { Tabs } from './ui/tabs';
 import { usePagination } from '../hooks/usePagination';
 import {
   Pagination,
@@ -537,7 +537,7 @@ export function StudentsManagement() {
                     <Label>First Name <span className="text-red-500">*</span></Label>
                     <Input
                       value={formData.first_name}
-                      onChange={e => setFormData({ ...formData, first_name: e.target.value })}
+                      onChange={e => { const val = e.target.value.replace(/[^a-zA-Z\sñÑ-]/g, ''); setFormData({ ...formData, first_name: val }); }}
                       placeholder="e.g. Juan"
                     />
                   </div>
@@ -545,7 +545,7 @@ export function StudentsManagement() {
                     <Label>Middle Initial</Label>
                     <Input
                       value={formData.middle_initial}
-                      onChange={e => setFormData({ ...formData, middle_initial: e.target.value })}
+                      onChange={e => { const val = e.target.value.replace(/[^a-zA-Z\sñÑ-]/g, ''); setFormData({ ...formData, middle_initial: val }); }}
                       placeholder="e.g. D"
                       maxLength={2}
                     />
@@ -554,7 +554,7 @@ export function StudentsManagement() {
                     <Label>Last Name <span className="text-red-500">*</span></Label>
                     <Input
                       value={formData.last_name}
-                      onChange={e => setFormData({ ...formData, last_name: e.target.value })}
+                      onChange={e => { const val = e.target.value.replace(/[^a-zA-Z\sñÑ-]/g, ''); setFormData({ ...formData, last_name: val }); }}
                       placeholder="e.g. Dela Cruz"
                     />
                   </div>
@@ -588,7 +588,7 @@ export function StudentsManagement() {
                   <Label>Student ID <span className="text-red-500">*</span></Label>
                   <Input
                     value={formData.student_id}
-                    onChange={e => setFormData({ ...formData, student_id: e.target.value })}
+                    onChange={e => { const val = e.target.value.replace(/[^0-9-]/g, ''); setFormData({ ...formData, student_id: val }); }}
                     placeholder="e.g. 2025-001"
                   />
                 </div>
@@ -640,7 +640,7 @@ export function StudentsManagement() {
 
                   <div>
                     <Label>Contact Name</Label>
-                    <Input value={formData.emergency_contact_name} onChange={e => setFormData({ ...formData, emergency_contact_name: e.target.value })} placeholder="Parent/Guardian Name" />
+                    <Input value={formData.emergency_contact_name} onChange={e => { const val = e.target.value.replace(/[^a-zA-Z\sñÑ-]/g, ''); setFormData({ ...formData, emergency_contact_name: val }); }} placeholder="Parent/Guardian Name" />
                   </div>
                   <div>
                     <Label>Contact Phone</Label>

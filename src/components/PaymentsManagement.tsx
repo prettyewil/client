@@ -543,28 +543,21 @@ export function PaymentsManagement() {
                   </span>
                 </td>
                 <td className="px-6 py-4 flex gap-2">
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    onClick={() => {
-                      setViewingPayment(p);
-                      setIsReceiptModalOpen(true);
-                    }}
-                    title="View Receipt / Update Status"
-                  >
-                    <Edit className="w-4 h-4 text-blue-600" />
-                  </Button>
-
-                  {(p.status === 'pending' || p.status === 'submitted') && !isStaff && (
+                  {p.status !== 'rejected' && p.status !== 'paid' && p.status !== 'verified' && (
                     <Button
                       size="sm"
                       variant="ghost"
-                      onClick={() => handleReject(p._id || p.id)}
-                      title="Reject Payment"
+                      onClick={() => {
+                        setViewingPayment(p);
+                        setIsReceiptModalOpen(true);
+                      }}
+                      title="View Receipt / Update Status"
                     >
-                      <XCircle className="w-4 h-4 text-orange-500" />
+                      <Edit className="w-4 h-4 text-blue-600" />
                     </Button>
                   )}
+
+
 
                   {!isStaff && (
                     <Button
@@ -679,28 +672,21 @@ export function PaymentsManagement() {
                 )}
               </div>
               <div className="flex gap-2">
-                <Button
-                  size="sm"
-                  variant="ghost"
-                  onClick={() => {
-                    setViewingPayment(p);
-                    setIsReceiptModalOpen(true);
-                  }}
-                  className="h-8 w-8 text-blue-600"
-                >
-                  <Edit className="w-4 h-4" />
-                </Button>
-
-                {(p.status === 'pending' || p.status === 'submitted') && !isStaff && (
+                {p.status !== 'rejected' && p.status !== 'paid' && p.status !== 'verified' && (
                   <Button
                     size="sm"
                     variant="ghost"
-                    onClick={() => handleReject(p._id || p.id)}
-                    className="h-8 w-8 text-orange-500"
+                    onClick={() => {
+                      setViewingPayment(p);
+                      setIsReceiptModalOpen(true);
+                    }}
+                    className="h-8 w-8 text-blue-600"
                   >
-                    <XCircle className="w-4 h-4" />
+                    <Edit className="w-4 h-4" />
                   </Button>
                 )}
+
+
 
                 {!isStaff && (
                   <Button

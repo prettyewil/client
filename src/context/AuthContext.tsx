@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import axios from 'axios';
-import { User, StudentProfile } from '../types';
+import { User, StudentProfile, UserRole } from '../types';
 
 interface AuthContextType {
   user: User | null;
@@ -43,9 +43,9 @@ function mapApiUser(apiUser: any): User {
     lastName: apiUser.lastName,
     middleInitial: apiUser.middleInitial,
     email: apiUser.email,
-    role: apiUser.role != null && apiUser.role !== ''
+    role: (apiUser.role != null && apiUser.role !== ''
       ? String(apiUser.role).toLowerCase().replace(/\s+/g, '_')
-      : 'student',
+      : 'student') as UserRole,
     status: apiUser.status || 'approved', // Default to approved for existing users
     studentProfile: studentProfile,
     studentId: apiUser.studentId,
@@ -108,6 +108,26 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     void restoreSession();
     return () => {
       cancelled = true;
+    };
+  }, []);
+
+  // Axios interceptor for 401 Unauthorized
+  useEffect(() => {
+    const interceptor = axios.interceptors.response.use(
+      (response) => response,
+      (error) => {
+        if (error.response && error.response.status === 401) {
+          sessionStorage.removeItem(STORAGE_KEY);
+          delete axios.defaults.headers.common.Authorization;
+          setUser(null);
+          setToken(null);
+        }
+        return Promise.reject(error);
+      }
+    );
+
+    return () => {
+      axios.interceptors.response.eject(interceptor);
     };
   }, []);
 

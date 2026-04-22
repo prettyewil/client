@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from './ui/dialog';
-import { Tabs } from './ui/Tabs';
 import { Loader2, Calendar, CreditCard, Wrench } from 'lucide-react';
 import { format } from 'date-fns';
 
