@@ -100,4 +100,5 @@ export interface Room {
   status: 'Available' | 'Occupied' | 'Maintenance';
   features: string[];
   students_count?: number;
+  student_names?: string[];
 }

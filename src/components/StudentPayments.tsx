@@ -18,7 +18,7 @@ interface Payment {
   _id: string;
   amount: number;
   type: string;
-  status: 'paid' | 'pending' | 'overdue' | 'verified' | 'submitted';
+  status: 'paid' | 'pending' | 'overdue' | 'verified' | 'submitted' | 'rejected';
   dueDate: string; // Changed from due_date
   receiptUrl?: string; // Changed/Standardized
 }
@@ -37,7 +37,7 @@ export function StudentPayments() {
   const [highlightPaymentId, setHighlightPaymentId] = useState<string | null>(null);
 
   const actionablePayments = payments.filter(
-    (p) => p.status === 'pending' || p.status === 'overdue'
+    (p) => p.status === 'pending' || p.status === 'overdue' || p.status === 'rejected'
   );
   const historyPayments = payments
     .filter((p) => ['paid', 'verified', 'submitted'].includes(p.status))
@@ -138,7 +138,7 @@ export function StudentPayments() {
   };
 
   const pendingOrOverdue = payments.filter(
-    (p) => p.status === 'pending' || p.status === 'overdue',
+    (p) => p.status === 'pending' || p.status === 'overdue' || p.status === 'rejected',
   );
 
   return (
@@ -147,22 +147,12 @@ export function StudentPayments() {
 
       {/* Next Due Payment Banner */}
       {nextDuePayment && (
-        <div className={`mb-4 p-4 rounded-lg border-2 ${
-          nextDuePayment.status === 'overdue'
-            ? 'border-red-400 bg-red-50'
-            : 'border-amber-400 bg-amber-50'
-        }`}>
-          <div className="flex items-center gap-2 mb-1">
-            <span className={`inline-flex items-center gap-1 text-xs font-bold px-2 py-0.5 rounded-full animate-pulse ${
-              nextDuePayment.status === 'overdue'
-                ? 'bg-red-500 text-white'
-                : 'bg-amber-500 text-white'
-            }`}>
+        <div className={`mb-4 p-6 rounded-lg border-2 border-red-400 bg-red-50`}>
+          <div className="flex items-center gap-2 mb-2">
+            <span className={`inline-flex items-center gap-1 text-sm font-bold px-3 py-1 rounded-full animate-pulse bg-red-500 text-white`}>
               ⚠ NEXT DUE
             </span>
-            <span className={`text-sm font-semibold ${
-              nextDuePayment.status === 'overdue' ? 'text-red-700' : 'text-amber-700'
-            }`}>
+            <span className={`text-base font-semibold text-red-700`}>
               {nextDuePayment.status === 'overdue'
                 ? `Overdue by ${Math.abs(getDaysUntilDue(nextDuePayment.dueDate))} day(s)!`
                 : getDaysUntilDue(nextDuePayment.dueDate) === 0
@@ -171,12 +161,10 @@ export function StudentPayments() {
               }
             </span>
           </div>
-          <p className={`text-lg font-bold ${
-            nextDuePayment.status === 'overdue' ? 'text-red-800' : 'text-amber-800'
-          }`}>
+          <p className={`text-2xl font-bold text-red-800`}>
             {currencyFormatter.format(nextDuePayment.amount)} · {nextDuePayment.type.toUpperCase()}
           </p>
-          <p className="text-xs text-gray-500 mt-1">
+          <p className="text-sm text-gray-500 mt-1">
             Due: {nextDuePayment.dueDate ? new Date(nextDuePayment.dueDate).toLocaleDateString() : 'Not set'}
           </p>
         </div>
@@ -209,9 +197,7 @@ export function StudentPayments() {
                     {currencyFormatter.format(p.amount)} · {p.type.toUpperCase()}
                   </p>
                   {isNextDue && (
-                    <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded ${
-                      p.status === 'overdue' ? 'bg-red-500 text-white' : 'bg-amber-500 text-white'
-                    }`}>NEXT DUE</span>
+                    <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded bg-red-500 text-white`}>NEXT DUE</span>
                   )}
                 </div>
                 <p className="text-xs text-gray-500">
@@ -229,7 +215,9 @@ export function StudentPayments() {
                           ? 'bg-indigo-100 text-indigo-800'
                           : p.status === 'overdue'
                             ? 'bg-red-100 text-red-700'
-                            : 'bg-yellow-100 text-yellow-800'
+                            : p.status === 'rejected'
+                              ? 'bg-gray-200 text-gray-800'
+                              : 'bg-yellow-100 text-yellow-800'
                       }`}
                   >
                     {p.status}
@@ -255,7 +243,7 @@ export function StudentPayments() {
               </div>
 
 
-              {(p.status === 'pending' || p.status === 'overdue') && !p.receiptUrl && (
+              {(p.status === 'pending' || p.status === 'overdue' || p.status === 'rejected') && (p.status === 'rejected' || !p.receiptUrl) && (
                 <div className="flex flex-col items-stretch gap-2 w-full md:w-80">
                   <div className="flex gap-2">
                     <input
@@ -317,7 +305,7 @@ export function StudentPayments() {
 
       {pendingOrOverdue.length === 0 && (
         <p className="text-xs text-gray-500 mt-4">
-          You have no pending or overdue payments requiring proof at the moment.
+          You have no pending, overdue, or rejected payments requiring proof at the moment.
         </p>
       )}
     </div>

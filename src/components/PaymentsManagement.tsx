@@ -46,6 +46,7 @@ export function PaymentsManagement() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isBulkModalOpen, setIsBulkModalOpen] = useState(false);
   const [editingId, setEditingId] = useState<number | null>(null);
+  const [activeTab, setActiveTab] = useState('All');
   const [formData, setFormData] = useState({ ...emptyPayment });
   const [bulkRows, setBulkRows] = useState([{ ...emptyPayment }]);
   /* Removed unused file state & handler */
@@ -389,7 +390,15 @@ export function PaymentsManagement() {
     awaitingApproval: payments.filter((p) => p.status === 'submitted').length,
   };
 
-  const { currentData, currentPage, maxPage, jump, next, prev } = usePagination(payments, 10);
+  const filteredPayments = payments.filter((p) => {
+    if (activeTab === 'All') return true;
+    if (activeTab === 'Pending') return p.status === 'pending' || p.status === 'submitted' || p.status === 'overdue';
+    if (activeTab === 'Approved') return p.status === 'paid' || p.status === 'verified';
+    if (activeTab === 'Rejected') return p.status === 'rejected';
+    return true;
+  });
+
+  const { currentData, currentPage, maxPage, jump, next, prev } = usePagination(filteredPayments, 10);
   const currentPayments = currentData();
 
   return (
@@ -446,6 +455,23 @@ export function PaymentsManagement() {
           <p className="text-sm text-gray-500">Awaiting Approval</p>
           <p className="text-2xl text-green-600">{summary.awaitingApproval}</p>
         </div>
+      </div>
+
+      {/* Shopee-style Status Tabs */}
+      <div className="flex border-b border-gray-200 mt-6 mb-4 overflow-x-auto no-scrollbar">
+        {['All', 'Pending', 'Approved', 'Rejected'].map((tab) => (
+          <button
+            key={tab}
+            onClick={() => { setActiveTab(tab); jump(1); }}
+            className={`px-6 py-3 font-medium text-sm whitespace-nowrap transition-colors border-b-2 ${
+              activeTab === tab
+                ? 'border-[#EE4D2D] text-[#EE4D2D]'
+                : 'border-transparent text-gray-500 hover:text-[#EE4D2D]'
+            }`}
+          >
+            {tab}
+          </button>
+        ))}
       </div>
 
       {/* Desktop Table View */}

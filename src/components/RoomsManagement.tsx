@@ -151,10 +151,9 @@ const RoomsManagement: React.FC = () => {
                 </Button>
             </div>
 
-            {/* Desktop Table */}
-            <div className="hidden md:block bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
-                <div className="p-4 border-b border-slate-200">
-                    <div className="relative">
+            {/* Unified Grid View */}
+            <div className="mb-6">
+                 <div className="relative">
                         <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400" size={20} />
                         <input
                             type="text"
@@ -163,148 +162,33 @@ const RoomsManagement: React.FC = () => {
                             onChange={(e) => setSearchTerm(e.target.value)}
                             className="w-full pl-10 pr-4 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
                         />
-                    </div>
-                </div>
-
-                <div className="overflow-x-auto">
-                    <table className="w-full text-left">
-                        <thead className="bg-slate-50 text-slate-600 text-sm font-semibold uppercase">
-                            <tr>
-                                <th className="px-6 py-4">Room Number</th>
-                                <th className="px-6 py-4">Capacity</th>
-                                <th className="px-6 py-4">Availability</th>
-                                <th className="px-6 py-4">Price</th>
-                                <th className="px-6 py-4">Status</th>
-                                <th className="px-6 py-4">Features</th>
-                                <th className="px-6 py-4 text-right">Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody className="divide-y divide-slate-200">
-                            {isLoading ? (
-                                <tr>
-                                    <td colSpan={7} className="text-center py-8 text-slate-500">Loading...</td>
-                                </tr>
-                            ) : currentRooms.length === 0 ? (
-                                <tr>
-                                    <td colSpan={7} className="text-center py-8 text-slate-500">No rooms found</td>
-                                </tr>
-                            ) : (
-                                currentRooms.map((room) => {
-                                    const derivedStatus = (room.status === 'Available' && (room.capacity - (room.students_count || 0)) <= 0) ? 'Occupied' : room.status;
-                                    return (
-                                    <tr key={room._id} className="hover:bg-slate-50 transition-colors">
-                                        <td className="px-6 py-4 font-medium text-slate-900">{room.roomNumber}</td>
-                                        <td className="px-6 py-4">{room.capacity}</td>
-                                        <td className="px-6 py-4">
-                                            <span className={`font-bold ${(room.capacity - (room.students_count || 0)) === 0 ? 'text-red-600' : 'text-green-600'
-                                                }`}>
-                                                {Math.max(0, room.capacity - (room.students_count || 0))} slots
-                                            </span>
-                                            <span className="text-xs text-gray-400 block">
-                                                ({room.students_count || 0} occupied)
-                                            </span>
-                                        </td>
-                                        <td className="px-6 py-4">{currencyFormatter.format(room.price)}</td>
-                                        <td className="px-6 py-4">
-                                            <span className={`px-2 py-1 rounded-full text-xs font-medium ${derivedStatus === 'Available' ? 'bg-emerald-100 text-emerald-700' :
-                                                derivedStatus === 'Occupied' ? 'bg-blue-100 text-blue-700' :
-                                                    'bg-amber-100 text-amber-700'
-                                                }`}>
-                                                {derivedStatus}
-                                            </span>
-                                        </td>
-                                        <td className="px-6 py-4 text-sm text-slate-500">
-                                            {room.features?.join(', ') || '-'}
-                                        </td>
-                                        <td className="px-6 py-4 text-right">
-                                            <div className="flex justify-end gap-2">
-                                                <button
-                                                    onClick={() => openModal(room)}
-                                                    className="p-2 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors"
-                                                >
-                                                    <Edit size={18} />
-                                                </button>
-                                                <button
-                                                    onClick={() => handleDelete(room._id)}
-                                                    className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                                                >
-                                                    <Trash2 size={18} />
-                                                </button>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                )})
-                            )}
-                        </tbody>
-                    </table>
-                    {/* Pagination Controls */}
-                    {maxPage > 1 && (
-                        <div className="p-4 border-t border-gray-100">
-                            <Pagination>
-                                <PaginationContent>
-                                    <PaginationItem>
-                                        <PaginationPrevious
-                                            onClick={(e) => { e.preventDefault(); prev(); }}
-                                            className={currentPage === 1 ? 'pointer-events-none opacity-50' : 'cursor-pointer'}
-                                        />
-                                    </PaginationItem>
-                                    {Array.from({ length: maxPage }).map((_, i) => (
-                                        <PaginationItem key={i}>
-                                            <PaginationLink
-                                                isActive={currentPage === i + 1}
-                                                onClick={(e) => { e.preventDefault(); jump(i + 1); }}
-                                                className="cursor-pointer"
-                                            >
-                                                {i + 1}
-                                            </PaginationLink>
-                                        </PaginationItem>
-                                    ))}
-                                    <PaginationItem>
-                                        <PaginationNext
-                                            onClick={(e) => { e.preventDefault(); next(); }}
-                                            className={currentPage === maxPage ? 'pointer-events-none opacity-50' : 'cursor-pointer'}
-                                        />
-                                    </PaginationItem>
-                                </PaginationContent>
-                            </Pagination>
-                        </div>
-                    )}
                 </div>
             </div>
 
-            {/* Mobile Card View */}
-            <div className="md:hidden space-y-4">
-                <div className="relative mb-4">
-                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400" size={20} />
-                    <input
-                        type="text"
-                        placeholder="Search rooms..."
-                        value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
-                        className="w-full pl-10 pr-4 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                    />
-                </div>
-
-                {isLoading ? (
-                    <div className="text-center py-8 text-slate-500">Loading...</div>
-                ) : currentRooms.length === 0 ? (
-                    <div className="text-center py-8 text-slate-500">No rooms found</div>
-                ) : (
-                    currentRooms.map((room) => {
+            {isLoading ? (
+                <div className="text-center py-8 text-slate-500">Loading...</div>
+            ) : currentRooms.length === 0 ? (
+                <div className="text-center py-8 text-slate-500">No rooms found</div>
+            ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {currentRooms.map((room) => {
                         const derivedStatus = (room.status === 'Available' && (room.capacity - (room.students_count || 0)) <= 0) ? 'Occupied' : room.status;
+                        const slotsLeft = Math.max(0, room.capacity - (room.students_count || 0));
                         return (
-                        <div key={room._id} className="bg-white p-4 rounded-xl shadow-sm border border-slate-200">
+                        <div key={room._id} className={`bg-white p-4 rounded-xl shadow-sm border border-slate-200 border-l-4 ${derivedStatus === 'Available' ? 'border-l-emerald-500' : derivedStatus === 'Occupied' ? 'border-l-blue-500' : 'border-l-amber-500'}`}>
                             <div className="flex justify-between items-start mb-3">
                                 <div>
-                                    <h3 className="font-bold text-slate-900 text-lg">Room {room.roomNumber}</h3>
+                                    <h3 className="font-bold text-[#001F3F] text-lg">Room {room.roomNumber}</h3>
                                     <p className="text-indigo-600 font-semibold">{currencyFormatter.format(room.price)}</p>
                                 </div>
-                                <span className={`px-2 py-1 rounded-full text-xs font-medium ${derivedStatus === 'Available' ? 'bg-emerald-100 text-emerald-700' :
-                                    derivedStatus === 'Occupied' ? 'bg-blue-100 text-blue-700' :
-                                        'bg-amber-100 text-amber-700'
-                                    }`}>
-                                    {derivedStatus}
-                                </span>
+                                <div className="flex gap-1">
+                                    <Button size="sm" variant="ghost" onClick={() => openModal(room)} className="text-slate-400 hover:text-indigo-600 hover:bg-indigo-50">
+                                        <Edit size={16} />
+                                    </Button>
+                                    <Button size="sm" variant="ghost" onClick={() => handleDelete(room._id)} className="text-slate-400 hover:text-red-600 hover:bg-red-50">
+                                        <Trash2 size={16} />
+                                    </Button>
+                                </div>
                             </div>
 
                             <div className="space-y-2 mb-4">
@@ -315,63 +199,77 @@ const RoomsManagement: React.FC = () => {
                                 <div className="flex justify-between text-sm">
                                     <span className="text-slate-500">Availability:</span>
                                     <span className="text-right">
-                                        <span className={`font-bold ${(room.capacity - (room.students_count || 0)) === 0 ? 'text-red-600' : 'text-green-600'
-                                            }`}>
-                                            {Math.max(0, room.capacity - (room.students_count || 0))} slots left
-                                        </span>
-                                        <span className="text-xs text-gray-400 block">
-                                            ({room.students_count || 0} occupied)
+                                        <span className={`font-bold ${slotsLeft === 0 ? 'text-red-600' : 'text-green-600'}`}>
+                                            {slotsLeft} slots left
                                         </span>
                                     </span>
                                 </div>
                                 <div className="text-sm">
+                                    <span className="text-slate-500 block mb-1">Occupants:</span>
+                                    {room.student_names && room.student_names.length > 0 ? (
+                                        <ul className="list-disc pl-5 text-slate-900">
+                                            {room.student_names.map((name: string, i: number) => (
+                                                <li key={i}>{name}</li>
+                                            ))}
+                                        </ul>
+                                    ) : (
+                                        <span className="text-slate-400 italic">No students assigned</span>
+                                    )}
+                                </div>
+                                <div className="text-sm pt-2 border-t border-slate-100">
                                     <span className="text-slate-500 block mb-1">Features:</span>
-                                    <p className="text-slate-900">{room.features?.join(', ') || 'None'}</p>
+                                    <p className="text-slate-900 line-clamp-2">{room.features?.join(', ') || 'None'}</p>
                                 </div>
                             </div>
 
-                            <div className="flex justify-end gap-2 pt-3 border-t border-slate-100">
-                                <button
-                                    onClick={() => openModal(room)}
-                                    className="px-3 py-1.5 text-sm text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors flex items-center gap-1"
-                                >
-                                    <Edit size={16} /> Edit
-                                </button>
-                                <button
-                                    onClick={() => handleDelete(room._id)}
-                                    className="px-3 py-1.5 text-sm text-red-600 hover:bg-red-50 rounded-lg transition-colors flex items-center gap-1"
-                                >
-                                    <Trash2 size={16} /> Delete
-                                </button>
+                            <div className="flex justify-end items-center pt-3 border-t border-slate-100">
+                                <span className={`px-2 py-1 rounded-full text-xs font-medium uppercase tracking-wider ${derivedStatus === 'Available' ? 'bg-emerald-100 text-emerald-700' :
+                                    derivedStatus === 'Occupied' ? 'bg-blue-100 text-blue-700' :
+                                        'bg-amber-100 text-amber-700'
+                                    }`}>
+                                    {derivedStatus}
+                                </span>
                             </div>
                         </div>
-                    )})
-                )}
-                {/* Pagination Controls Mobile */}
-                {maxPage > 1 && (
-                    <div className="flex justify-center pt-2">
-                        <Pagination>
-                            <PaginationContent>
-                                <PaginationItem>
-                                    <PaginationPrevious
-                                        onClick={(e) => { e.preventDefault(); prev(); }}
-                                        className={currentPage === 1 ? 'pointer-events-none opacity-50' : 'cursor-pointer'}
-                                    />
+                    )})}
+                </div>
+            )}
+            
+            {/* Pagination Controls */}
+            {maxPage > 1 && (
+                <div className="flex justify-center pt-4">
+                    <Pagination>
+                        <PaginationContent>
+                            <PaginationItem>
+                                <PaginationPrevious
+                                    onClick={(e) => { e.preventDefault(); prev(); }}
+                                    className={currentPage === 1 ? 'pointer-events-none opacity-50' : 'cursor-pointer'}
+                                />
+                            </PaginationItem>
+                            {Array.from({ length: maxPage }).map((_, i) => (
+                                <PaginationItem key={i} className="hidden md:inline-block">
+                                    <PaginationLink
+                                        isActive={currentPage === i + 1}
+                                        onClick={(e) => { e.preventDefault(); jump(i + 1); }}
+                                        className="cursor-pointer"
+                                    >
+                                        {i + 1}
+                                    </PaginationLink>
                                 </PaginationItem>
-                                <PaginationItem>
-                                    <span className="mx-2 text-sm">{currentPage} / {maxPage}</span>
-                                </PaginationItem>
-                                <PaginationItem>
-                                    <PaginationNext
-                                        onClick={(e) => { e.preventDefault(); next(); }}
-                                        className={currentPage === maxPage ? 'pointer-events-none opacity-50' : 'cursor-pointer'}
-                                    />
-                                </PaginationItem>
-                            </PaginationContent>
-                        </Pagination>
-                    </div>
-                )}
-            </div>
+                            ))}
+                            <PaginationItem className="md:hidden">
+                                <span className="mx-2 text-sm">{currentPage} / {maxPage}</span>
+                            </PaginationItem>
+                            <PaginationItem>
+                                <PaginationNext
+                                    onClick={(e) => { e.preventDefault(); next(); }}
+                                    className={currentPage === maxPage ? 'pointer-events-none opacity-50' : 'cursor-pointer'}
+                                />
+                            </PaginationItem>
+                        </PaginationContent>
+                    </Pagination>
+                </div>
+            )}
 
             <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
                 <DialogContent className="bg-white z-[100] border-2 border-gray-200 shadow-xl w-[95vw] max-w-lg max-h-[85vh] overflow-y-auto">

@@ -62,7 +62,7 @@ export function StudentDashboard({ onNavigate }: StudentDashboardProps) {
   const recentAnnouncements = announcements.slice(0, 3);
 
   const totalDue = studentPayments
-    .filter((p) => p.status === 'pending' || p.status === 'overdue')
+    .filter((p) => p.status === 'pending' || p.status === 'overdue' || p.status === 'rejected')
     .reduce((sum, p) => sum + Number(p.amount), 0);
 
   const overdueCount = studentPayments.filter((p) => p.status === 'overdue').length;
