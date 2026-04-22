@@ -59,7 +59,6 @@ export function StudentDashboard({ onNavigate }: StudentDashboardProps) {
 
   const studentPayments = payments;
   const studentRequests = requests;
-  const recentAnnouncements = announcements.slice(0, 3);
 
   const totalDue = studentPayments
     .filter((p) => p.status === 'pending' || p.status === 'overdue' || p.status === 'rejected')
@@ -180,17 +179,11 @@ export function StudentDashboard({ onNavigate }: StudentDashboardProps) {
       {/* Announcements Section */}
       <div className="bg-white rounded-lg shadow p-6">
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-[#001F3F]">Recent Announcements</h3>
-          <button
-            onClick={() => onNavigate('announcements')}
-            className="text-sm text-blue-600 hover:underline"
-          >
-            View All
-          </button>
+          <h3 className="text-[#001F3F]">Announcements</h3>
         </div>
-        {recentAnnouncements.length > 0 ? (
-          <div className="space-y-3">
-            {recentAnnouncements.map((a) => (
+        {announcements.length > 0 ? (
+          <div className="space-y-3 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar">
+            {announcements.map((a) => (
               <div key={a.id} className="border-l-4 border-[#FFD700] pl-4 py-2">
                 <div className="flex items-start justify-between">
                   <h4 className="text-[#001F3F] font-semibold">{a.title}</h4>

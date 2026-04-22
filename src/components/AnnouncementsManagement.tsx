@@ -28,7 +28,7 @@ interface AnnouncementDto {
 
 export function AnnouncementsManagement() {
   const { user } = useAuth();
-  const isAdmin = user?.role === 'admin' || user?.role === 'manager' || user?.role === 'super_admin';
+  const isAdmin = user?.role === 'admin' || user?.role === 'manager';
 
   const [announcements, setAnnouncements] = useState<AnnouncementDto[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);

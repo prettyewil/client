@@ -39,7 +39,7 @@ export function Layout({ children, currentPage, onNavigate }: LayoutProps) {
     { id: 'announcements', label: 'Announcements', icon: Megaphone },
     { id: 'logs', label: 'System Logs', icon: ShieldCheck },
     { id: 'maintenance', label: 'Maintenance', icon: Wrench },
-    ...(user?.role === 'super_admin' ? [{ id: 'settings', label: 'Settings', icon: SettingsIcon }] : [])
+    ...(user?.role === 'admin' ? [{ id: 'settings', label: 'Settings', icon: SettingsIcon }] : [])
   ];
 
   const studentMenuItems = [
@@ -47,7 +47,6 @@ export function Layout({ children, currentPage, onNavigate }: LayoutProps) {
     { id: 'payments', label: 'My Payments', icon: PhilippinePeso },
     { id: 'attendance', label: 'Attendance', icon: Clock },
     { id: 'tasks', label: 'Task', icon: Calendar },
-    { id: 'announcements', label: 'Announcements', icon: Megaphone },
     { id: 'maintenance', label: 'Maintenance', icon: Wrench },
   ];
 
@@ -60,7 +59,7 @@ export function Layout({ children, currentPage, onNavigate }: LayoutProps) {
     { id: 'maintenance', label: 'Maintenance', icon: Wrench },
   ];
 
-  const menuItems = (user?.role === 'admin' || user?.role === 'manager' || user?.role === 'super_admin') ? adminMenuItems : (user?.role === 'staff' ? staffMenuItems : studentMenuItems);
+  const menuItems = (user?.role === 'admin' || user?.role === 'manager') ? adminMenuItems : (user?.role === 'staff' ? staffMenuItems : studentMenuItems);
 
   return (
     <div className="min-h-screen flex">

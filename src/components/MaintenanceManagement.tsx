@@ -42,7 +42,7 @@ export function MaintenanceManagement() {
   useEffect(() => {
     if (isAppLoading || !user) return;
     void fetchRequests();
-    if (user.role === 'admin' || user.role === 'super_admin') {
+    if (user.role === 'admin') {
       void fetchStudents();
     }
   }, [user, isAppLoading]);
@@ -117,7 +117,7 @@ export function MaintenanceManagement() {
   };
 
   const handleSubmit = async () => {
-    if (((user?.role === 'admin' || user?.role === 'super_admin') && !formData.student_id) || !formData.title.trim() || !formData.description.trim()) {
+    if ((user?.role === 'admin' && !formData.student_id) || !formData.title.trim() || !formData.description.trim()) {
       Swal.fire('Missing fields', 'Title and description are required.', 'warning');
       return;
     }
@@ -219,7 +219,7 @@ export function MaintenanceManagement() {
               </div>
 
               <div className="flex gap-1">
-                {(user?.role === 'admin' || user?.role === 'staff' || user?.role === 'super_admin') ? (
+                {(user?.role === 'admin' || user?.role === 'staff') ? (
                   <>
                     {req.status === 'pending' && (
                       <Button
@@ -311,7 +311,7 @@ export function MaintenanceManagement() {
             <DialogTitle>{editingId ? 'Edit Request' : 'New Request'}</DialogTitle>
           </DialogHeader>
           <div className="space-y-4 py-4">
-            {(user?.role === 'admin' || user?.role === 'super_admin') && (
+            {user?.role === 'admin' && (
               <>
                 <div>
                   <Label>Student</Label>
@@ -372,7 +372,7 @@ export function MaintenanceManagement() {
                 <option value="high">High</option>
               </select>
             </div>
-            {(user?.role === 'admin' || user?.role === 'staff' || user?.role === 'super_admin') && ( // Only admin/staff can change status from here
+            {(user?.role === 'admin' || user?.role === 'staff') && ( // Only admin/staff can change status from here
               <div>
                 <Label>Status</Label>
                 <select

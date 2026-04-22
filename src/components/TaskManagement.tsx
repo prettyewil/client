@@ -68,7 +68,7 @@ export function TaskManagement() {
     useEffect(() => {
         if (isAppLoading || !user) return;
         void fetchTasks();
-        if (user.role === 'admin' || user.role === 'super_admin') {
+        if (user.role === 'admin') {
             void fetchRooms();
         }
     }, [user, isAppLoading]);
@@ -203,7 +203,7 @@ export function TaskManagement() {
             return;
         }
 
-        if (user?.role === 'admin' || user?.role === 'super_admin') {
+        if (user?.role === 'admin') {
             openModal(event.resource);
         } else {
             // Student view details
@@ -254,7 +254,7 @@ export function TaskManagement() {
                             List
                         </button>
                     </div>
-                    {(user?.role === 'admin' || user?.role === 'staff' || user?.role === 'super_admin') && (
+                    {(user?.role === 'admin' || user?.role === 'staff') && (
                         <Button onClick={() => openModal()} className="bg-[#001F3F] text-white">
                             <Plus className="w-4 h-4 mr-2" /> Add Task
                         </Button>

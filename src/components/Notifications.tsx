@@ -26,17 +26,17 @@ function targetPageForNotification(n: Notification, role: string | undefined): s
 
     switch (model) {
         case 'Payment':
-            if (role === 'admin' || role === 'manager' || role === 'super_admin' || role === 'student') {
+            if (role === 'admin' || role === 'manager' || role === 'student') {
                 return 'payments';
             }
             return 'dashboard';
         case 'MaintenanceRequest':
-            if (role === 'admin' || role === 'manager' || role === 'super_admin' || role === 'staff' || role === 'student') {
+            if (role === 'admin' || role === 'manager' || role === 'staff' || role === 'student') {
                 return 'maintenance';
             }
             return null;
         case 'User':
-            if (role === 'admin' || role === 'manager' || role === 'super_admin' || role === 'staff') {
+            if (role === 'admin' || role === 'manager' || role === 'staff') {
                 return 'students';
             }
             if (role === 'student') {
@@ -44,7 +44,7 @@ function targetPageForNotification(n: Notification, role: string | undefined): s
             }
             return 'dashboard';
         case 'Announcement':
-            if (role === 'admin' || role === 'manager' || role === 'super_admin' || role === 'student') {
+            if (role === 'admin' || role === 'manager' || role === 'student') {
                 return 'announcements';
             }
             return 'dashboard';

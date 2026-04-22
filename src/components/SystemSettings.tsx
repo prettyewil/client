@@ -9,7 +9,7 @@ import { Label } from './ui/label';
 
 export function SystemSettings() {
     const { user } = useAuth();
-    const isSuperAdmin = user?.role === 'super_admin';
+    const isAdmin = user?.role === 'admin';
 
     const [settings, setSettings] = useState({
         sessionTimeout: 15,
@@ -50,8 +50,8 @@ export function SystemSettings() {
     };
 
     const handleSave = async () => {
-        if (!isSuperAdmin) {
-            Swal.fire('Unauthorized', 'Only Super Admins can change settings.', 'error');
+        if (!isAdmin) {
+            Swal.fire('Unauthorized', 'Only Admins can change settings.', 'error');
             return;
         }
 
@@ -72,7 +72,7 @@ export function SystemSettings() {
         }
     };
 
-    if (!isSuperAdmin) {
+    if (!isAdmin) {
         return (
             <div className="flex flex-col items-center justify-center py-12 text-gray-500">
                 <ShieldAlert className="w-16 h-16 text-red-500 mb-4" />

@@ -84,7 +84,7 @@ function AppContent() {
   }
 
   const renderPage = () => {
-    if (user.role === 'admin' || user.role === 'manager' || user.role === 'super_admin') {
+    if (user.role === 'admin' || user.role === 'manager') {
       switch (currentPage) {
         case 'dashboard':
           return <AdminDashboard onNavigate={setCurrentPage} />;

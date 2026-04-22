@@ -29,7 +29,7 @@ interface Student {
     middle_initial?: string;
     name: string;
     email: string;
-    role: 'student' | 'staff' | 'admin';
+    role: 'student' | 'staff';
     studentProfile?: {
         room_id?: string;
         roomNumber: string;
@@ -48,7 +48,7 @@ interface Staff {
     lastName?: string;
     middleInitial?: string;
     email: string;
-    role: 'staff' | 'admin' | 'manager' | 'super_admin';
+    role: 'staff' | 'admin' | 'manager';
     status: 'active' | 'inactive';
     createdAt: string;
 }
@@ -63,7 +63,7 @@ interface Room {
 
 export function UserManagement() {
     const { user } = useAuth();
-    const isAdmin = user?.role === 'admin' || user?.role === 'super_admin';
+    const isAdmin = user?.role === 'admin';
 
     const [activeUserTab, setActiveUserTab] = useState<'students' | 'employees' | 'pending'>('students');
     const [students, setStudents] = useState<Student[]>([]);
@@ -86,9 +86,9 @@ export function UserManagement() {
     const [isHistoryModalOpen, setIsHistoryModalOpen] = useState(false);
 
     // Permissions
-    const isSuperAdmin = user?.role === 'super_admin';
-    const canManageEmployees = ['admin', 'manager', 'super_admin'].includes(user?.role || '');
-    const canViewEmployees = ['admin', 'super_admin'].includes(user?.role || '');
+    const isTopAdmin = user?.role === 'admin';
+    const canManageEmployees = ['admin', 'manager'].includes(user?.role || '');
+    const canViewEmployees = ['admin'].includes(user?.role || '');
 
     // Student Form State
     const initialStudentForm = {
@@ -492,12 +492,11 @@ export function UserManagement() {
                                             Room: {item.studentProfile?.roomNumber || 'N/A'}
                                         </span>
                                     ) : (
-                                        <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium ${item.role === 'super_admin' ? 'bg-indigo-100 text-indigo-700' :
-                                            item.role === 'admin' ? 'bg-rose-100 text-rose-700' :
+                                        <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium ${item.role === 'admin' ? 'bg-indigo-100 text-indigo-700' :
                                             item.role === 'manager' ? 'bg-purple-100 text-purple-700' :
                                                 'bg-blue-100 text-blue-700'
                                             }`}>
-                                            <Shield className="w-3 h-3" /> {item.role === 'super_admin' ? 'Super Admin' : item.role === 'admin' ? 'Admin' : item.role === 'manager' ? 'Manager' : 'Staff'}
+                                            <Shield className="w-3 h-3" /> {item.role === 'admin' ? 'Admin' : item.role === 'manager' ? 'Manager' : 'Staff'}
                                         </span>
                                     )}
                                 </div>
@@ -535,7 +534,7 @@ export function UserManagement() {
                                             </Button>
                                         </>
                                     )}
-                                    {activeUserTab === 'employees' && isSuperAdmin && (
+                                    {activeUserTab === 'employees' && isTopAdmin && (
                                         <Button variant="ghost" size="sm" onClick={() => openRoleModal(item)} className="text-indigo-600 hover:text-indigo-700 hover:bg-indigo-50 h-8">
                                             <Edit className="w-4 h-4 mr-1" /> Manage
                                         </Button>
@@ -629,12 +628,11 @@ export function UserManagement() {
                                                     </div>
                                                 ) : <span className="text-xs text-gray-400 italic">Not set</span>
                                             ) : (
-                                                <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium ${item.role === 'super_admin' ? 'bg-indigo-100 text-indigo-700' :
-                                                    item.role === 'admin' ? 'bg-rose-100 text-rose-700' :
+                                                <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium ${item.role === 'admin' ? 'bg-indigo-100 text-indigo-700' :
                                                     item.role === 'manager' ? 'bg-purple-100 text-purple-700' :
                                                         'bg-blue-100 text-blue-700'
                                                     }`}>
-                                                    <Shield className="w-3 h-3" /> {item.role === 'super_admin' ? 'Super Admin' : item.role === 'admin' ? 'Admin' : item.role === 'manager' ? 'Manager' : 'Staff'}
+                                                    <Shield className="w-3 h-3" /> {item.role === 'admin' ? 'Admin' : item.role === 'manager' ? 'Manager' : 'Staff'}
                                                 </span>
                                             )}
                                         </td>
@@ -680,7 +678,7 @@ export function UserManagement() {
                                                     </Button>
                                                 </>
                                             )}
-                                            {activeUserTab === 'employees' && isSuperAdmin && (
+                                            {activeUserTab === 'employees' && isTopAdmin && (
                                                 <Button variant="ghost" size="sm" onClick={() => openRoleModal(item)} className="text-indigo-600 hover:bg-indigo-50 h-8 mx-1">
                                                     <Edit className="w-4 h-4 mr-1 inline" /> Manage
                                                 </Button>
@@ -863,8 +861,7 @@ export function UserManagement() {
                                 onChange={(e) => setStaffFormData({ ...staffFormData, role: e.target.value })}
                             >
                                 <option value="staff">Staff</option>
-                                {isSuperAdmin && <option value="manager">Manager</option>}
-                                {isSuperAdmin && <option value="admin">Admin</option>}
+                                {isTopAdmin && <option value="manager">Manager</option>}
                             </select>
                         </div>
                         <div className="col-span-2">
@@ -901,8 +898,7 @@ export function UserManagement() {
                                     onChange={(e) => setRoleEditData({ ...roleEditData, newRole: e.target.value })}
                                 >
                                     <option value="staff">Staff</option>
-                                    {isSuperAdmin && <option value="manager">Manager</option>}
-                                    {isSuperAdmin && <option value="admin">Admin</option>}
+                                    {isTopAdmin && <option value="manager">Manager</option>}
                                 </select>
                             </div>
                         </div>
