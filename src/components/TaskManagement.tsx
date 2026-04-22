@@ -33,7 +33,6 @@ interface Task {
     dueDate: string;
     status: 'pending' | 'completed';
     notes?: string;
-    googleEventId?: string;
     isHoliday?: boolean;
 }
 
@@ -58,7 +57,6 @@ export function TaskManagement() {
         dueDate: '', // YYYY-MM-DDTHH:mm
         status: 'pending' as 'pending' | 'completed',
         notes: '',
-        syncToCalendar: false,
     };
     const [formData, setFormData] = useState(initialForm);
 
@@ -115,7 +113,6 @@ export function TaskManagement() {
                 dueDate: moment(task.dueDate).format('YYYY-MM-DDTHH:mm'),
                 status: task.status,
                 notes: task.notes || '',
-                syncToCalendar: !!task.googleEventId,
             });
         } else {
             setEditingId(null);
@@ -146,10 +143,10 @@ export function TaskManagement() {
         }
     };
 
-    const handleDelete = async (id: string, googleEventId?: string) => {
+    const handleDelete = async (id: string) => {
         const res = await Swal.fire({
             title: 'Delete task?',
-            text: googleEventId ? 'This will also remove the event from Google Calendar.' : 'This action cannot be undone.',
+            text: 'This action cannot be undone.',
             icon: 'warning',
             showCancelButton: true,
             confirmButtonColor: '#d33',
@@ -311,7 +308,7 @@ export function TaskManagement() {
                                             <Button variant="ghost" size="sm" onClick={() => openModal(task)}>
                                                 <Edit className="w-4 h-4 text-blue-600" />
                                             </Button>
-                                            <Button variant="ghost" size="sm" onClick={() => handleDelete(task._id, task.googleEventId)}>
+                                            <Button variant="ghost" size="sm" onClick={() => handleDelete(task._id)}>
                                                 <Trash2 className="w-4 h-4 text-red-600" />
                                             </Button>
                                         </td>
@@ -340,7 +337,7 @@ export function TaskManagement() {
                                     <Button variant="outline" size="sm" onClick={() => openModal(task)} className="h-8 text-xs">
                                         <Edit className="w-3 h-3 mr-1" /> Edit
                                     </Button>
-                                    <Button variant="outline" size="sm" onClick={() => handleDelete(task._id, task.googleEventId)} className="h-8 text-xs text-red-600 border-red-100">
+                                    <Button variant="outline" size="sm" onClick={() => handleDelete(task._id)} className="h-8 text-xs text-red-600 border-red-100">
                                         <Trash2 className="w-3 h-3 mr-1" /> Delete
                                     </Button>
                                 </div>
@@ -469,23 +466,10 @@ export function TaskManagement() {
                                 placeholder="Additional instructions..."
                             />
                         </div>
-
-                        <div className="flex items-center gap-2 mt-4 pt-4 border-t">
-                            <input
-                                type="checkbox"
-                                id="syncToCalendar"
-                                checked={formData.syncToCalendar}
-                                onChange={(e) => setFormData({ ...formData, syncToCalendar: e.target.checked })}
-                                className="w-4 h-4 text-[#001F3F] rounded border-gray-300"
-                            />
-                            <Label htmlFor="syncToCalendar" className="cursor-pointer font-medium mb-0">
-                                Sync with Google Calendar
-                            </Label>
-                        </div>
                     </div>
                     <DialogFooter>
                         {editingId && (
-                            <Button variant="destructive" onClick={() => handleDelete(editingId, tasks.find(t => t._id === editingId)?.googleEventId)}>
+                            <Button variant="destructive" onClick={() => handleDelete(editingId)}>
                                 Delete
                             </Button>
                         )}

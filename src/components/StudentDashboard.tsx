@@ -160,49 +160,87 @@ export function StudentDashboard({ onNavigate }: StudentDashboardProps) {
 
       {/* Content Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* My Maintenance Requests */}
-        <div className="bg-white rounded-lg shadow p-6">
-          <h3 className="text-[#001F3F] mb-4">My Maintenance Requests</h3>
-          <div className="space-y-3">
-            {studentRequests.length > 0 ? (
-              studentRequests.map((request) => (
-                <div key={request._id} className="border border-gray-200 rounded-lg p-4">
-                  <div className="flex items-start justify-between mb-2">
-                    <h4 className="text-[#001F3F]">{request.title}</h4>
-                    <span className={`flex items-center gap-1 text-xs px-2 py-1 rounded ${request.status === 'resolved'
-                      ? 'bg-green-100 text-green-700'
-                      : request.status === 'in-progress'
-                        ? 'bg-blue-100 text-blue-700'
-                        : 'bg-yellow-100 text-yellow-700'
-                      }`}>
-                      {request.status === 'resolved' ? (
-                        <CheckCircle className="w-3 h-3" />
-                      ) : request.status === 'in-progress' ? (
-                        <Clock className="w-3 h-3" />
-                      ) : (
-                        <AlertCircle className="w-3 h-3" />
-                      )}
-                      {request.status.replace('-', ' ')}
-                    </span>
+        <div className="flex flex-col gap-6">
+          {/* My Maintenance Requests */}
+          <div className="bg-white rounded-lg shadow p-6">
+            <h3 className="text-[#001F3F] mb-4">My Maintenance Requests</h3>
+            <div className="space-y-3">
+              {studentRequests.length > 0 ? (
+                studentRequests.map((request) => (
+                  <div key={request._id} className="border border-gray-200 rounded-lg p-4">
+                    <div className="flex items-start justify-between mb-2">
+                      <h4 className="text-[#001F3F]">{request.title}</h4>
+                      <span className={`flex items-center gap-1 text-xs px-2 py-1 rounded ${request.status === 'resolved'
+                        ? 'bg-green-100 text-green-700'
+                        : request.status === 'in-progress'
+                          ? 'bg-blue-100 text-blue-700'
+                          : 'bg-yellow-100 text-yellow-700'
+                        }`}>
+                        {request.status === 'resolved' ? (
+                          <CheckCircle className="w-3 h-3" />
+                        ) : request.status === 'in-progress' ? (
+                          <Clock className="w-3 h-3" />
+                        ) : (
+                          <AlertCircle className="w-3 h-3" />
+                        )}
+                        {request.status.replace('-', ' ')}
+                      </span>
+                    </div>
+                    <p className="text-sm text-gray-600 line-clamp-2">{request.description}</p>
+                    <div className="mt-2 flex items-center justify-between text-xs text-gray-500">
+                      <span className={`px-2 py-1 rounded ${request.urgency === 'high'
+                        ? 'bg-red-100 text-red-700'
+                        : request.urgency === 'medium'
+                          ? 'bg-orange-100 text-orange-700'
+                          : 'bg-gray-100 text-gray-700'
+                        }`}>
+                        {request.urgency} priority
+                      </span>
+                      <span>{new Date(request.created_at).toLocaleDateString()}</span>
+                    </div>
                   </div>
-                  <p className="text-sm text-gray-600 line-clamp-2">{request.description}</p>
-                  <div className="mt-2 flex items-center justify-between text-xs text-gray-500">
-                    <span className={`px-2 py-1 rounded ${request.urgency === 'high'
-                      ? 'bg-red-100 text-red-700'
-                      : request.urgency === 'medium'
-                        ? 'bg-orange-100 text-orange-700'
-                        : 'bg-gray-100 text-gray-700'
-                      }`}>
-                      {request.urgency} priority
-                    </span>
-                    <span>{new Date(request.created_at).toLocaleDateString()}</span>
-                  </div>
+                ))
+              ) : (
+                <div className="text-center py-8 text-gray-500">
+                  <Wrench className="w-12 h-12 mx-auto mb-2 text-gray-400" />
+                  <p>No maintenance requests</p>
                 </div>
-              ))
+              )}
+            </div>
+          </div>
+
+          {/* Announcements Section */}
+          <div className="bg-white rounded-lg shadow p-6">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-[#001F3F]">Announcements</h3>
+            </div>
+            {announcements.length > 0 ? (
+              <div className="space-y-3 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar">
+                {announcements.map((a) => (
+                  <div key={a.id} className="border-l-4 border-[#FFD700] pl-4 py-2">
+                    <div className="flex items-start justify-between">
+                      <h4 className="text-[#001F3F] font-semibold">{a.title}</h4>
+                      <span className={`text-xs px-2 py-1 rounded ${
+                        a.priority === 'urgent'
+                          ? 'bg-red-100 text-red-700'
+                          : a.priority === 'important'
+                            ? 'bg-orange-100 text-orange-700'
+                            : 'bg-gray-100 text-gray-700'
+                      }`}>
+                        {a.priority}
+                      </span>
+                    </div>
+                    <p className="text-sm text-gray-600 mt-1 line-clamp-2">{a.content}</p>
+                    <p className="text-xs text-gray-400 mt-1">
+                      {new Date(a.created_at).toLocaleDateString()}
+                    </p>
+                  </div>
+                ))}
+              </div>
             ) : (
               <div className="text-center py-8 text-gray-500">
-                <Wrench className="w-12 h-12 mx-auto mb-2 text-gray-400" />
-                <p>No maintenance requests</p>
+                <Megaphone className="w-12 h-12 mx-auto mb-2 text-gray-400" />
+                <p>No announcements at this time</p>
               </div>
             )}
           </div>
