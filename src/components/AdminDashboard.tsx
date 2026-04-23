@@ -61,59 +61,59 @@ export function AdminDashboard({ onNavigate }: AdminDashboardProps) {
     <div className="space-y-6">
       {/* Stats Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <div className="bg-white rounded-lg shadow p-6 border-l-4 border-[#001F3F]">
-          <div className="flex items-center justify-between mb-4">
-            <div className="bg-[#001F3F] text-white p-3 rounded-lg">
-              <Users className="w-6 h-6" />
+        <div className="bg-white rounded-lg shadow p-4 border-l-4 border-[#001F3F]">
+          <div className="flex items-center justify-between mb-2">
+            <div className="bg-[#001F3F] text-white p-2 rounded-lg">
+              <Users className="w-5 h-5" />
             </div>
-            <TrendingUp className="w-5 h-5 text-green-500" />
+            <TrendingUp className="w-4 h-4 text-green-500" />
           </div>
-          <p className="text-3xl mb-1">{stats?.totalStudents ?? (loading ? '—' : 0)}</p>
-          <p className="text-sm text-gray-600">Total Students</p>
+          <p className="text-2xl mb-0.5">{stats?.totalStudents ?? (loading ? '—' : 0)}</p>
+          <p className="text-xs text-gray-600">Total Students</p>
         </div>
 
-        <div className="bg-white rounded-lg shadow p-6 border-l-4 border-[#FFD700]">
-          <div className="flex items-center justify-between mb-4">
-            <div className="bg-[#FFD700] text-[#001F3F] p-3 rounded-lg">
-              <Wrench className="w-6 h-6" />
+        <div className="bg-white rounded-lg shadow p-4 border-l-4 border-[#FFD700]">
+          <div className="flex items-center justify-between mb-2">
+            <div className="bg-[#FFD700] text-[#001F3F] p-2 rounded-lg">
+              <Wrench className="w-5 h-5" />
             </div>
             {(stats?.pendingMaintenance ?? 0) > 0 && (
-              <span className="bg-orange-100 text-orange-700 text-xs px-2 py-1 rounded">Pending</span>
+              <span className="bg-orange-100 text-orange-700 text-[10px] px-1.5 py-0.5 rounded">Pending</span>
             )}
           </div>
-          <p className="text-3xl mb-1">{stats?.pendingMaintenance ?? (loading ? '—' : 0)}</p>
-          <p className="text-sm text-gray-600">Pending Maintenance</p>
+          <p className="text-2xl mb-0.5">{stats?.pendingMaintenance ?? (loading ? '—' : 0)}</p>
+          <p className="text-xs text-gray-600">Pending Maintenance</p>
         </div>
 
-        <div className="bg-white rounded-lg shadow p-6 border-l-4 border-blue-500">
-          <div className="flex items-center justify-between mb-4">
-            <div className="bg-blue-500 text-white p-3 rounded-lg">
-              <Calendar className="w-6 h-6" />
+        <div className="bg-white rounded-lg shadow p-4 border-l-4 border-blue-500">
+          <div className="flex items-center justify-between mb-2">
+            <div className="bg-blue-500 text-white p-2 rounded-lg">
+              <Calendar className="w-5 h-5" />
             </div>
           </div>
-          <p className="text-3xl mb-1">{stats?.pendingCleaning ?? (loading ? '—' : 0)}</p>
-          <p className="text-sm text-gray-600">Tasks</p>
+          <p className="text-2xl mb-0.5">{stats?.pendingCleaning ?? (loading ? '—' : 0)}</p>
+          <p className="text-xs text-gray-600">Tasks</p>
         </div>
 
-        <div className="bg-white rounded-lg shadow p-6 border-l-4 border-red-500">
-          <div className="flex items-center justify-between mb-4">
-            <div className="bg-red-500 text-white p-3 rounded-lg">
-              <PhilippinePeso className="w-6 h-6" />
+        <div className="bg-white rounded-lg shadow p-4 border-l-4 border-red-500">
+          <div className="flex items-center justify-between mb-2">
+            <div className="bg-red-500 text-white p-2 rounded-lg">
+              <PhilippinePeso className="w-5 h-5" />
             </div>
             {stats?.overduePayments && stats.overduePayments > 0 && (
-              <AlertCircle className="w-5 h-5 text-red-500" />
+              <AlertCircle className="w-4 h-4 text-red-500" />
             )}
           </div>
-          <p className="text-3xl mb-1">{stats?.overduePayments ?? (loading ? '—' : 0)}</p>
-          <p className="text-sm text-gray-600">Overdue Payments</p>
+          <p className="text-2xl mb-0.5">{stats?.overduePayments ?? (loading ? '—' : 0)}</p>
+          <p className="text-xs text-gray-600">Overdue Payments</p>
         </div>
       </div>
 
       {/* Content Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Recent Announcements */}
-        <div className="bg-white rounded-lg shadow p-6">
-          <h3 className="text-[#001F3F] mb-4">Recent Announcements</h3>
+        <div className="bg-white rounded-lg shadow p-4">
+          <h3 className="text-[#001F3F] text-base font-semibold mb-4">Recent Announcements</h3>
           <div className="space-y-4">
             {recentAnnouncements.map((announcement) => (
               <div key={announcement._id} className="border-l-4 border-[#FFD700] pl-4 py-2">
@@ -138,8 +138,8 @@ export function AdminDashboard({ onNavigate }: AdminDashboardProps) {
         </div>
 
         {/* Urgent Maintenance */}
-        <div className="bg-white rounded-lg shadow p-6">
-          <h3 className="text-[#001F3F] mb-4">Urgent Maintenance Requests</h3>
+        <div className="bg-white rounded-lg shadow p-4">
+          <h3 className="text-[#001F3F] text-base font-semibold mb-4">Urgent Maintenance Requests</h3>
           <div className="space-y-4">
             {urgentMaintenance.length > 0 ? (
               urgentMaintenance.map((request) => (

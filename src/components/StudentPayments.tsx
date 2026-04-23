@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from 'react';
+import { PhilippinePeso, AlertCircle } from 'lucide-react';
 import axios from 'axios';
 import Swal from 'sweetalert2';
+import moment from 'moment';
 import { useAuth } from '../context/AuthContext';
 import { Button } from './ui/button';
 import { usePagination } from '../hooks/usePagination';
@@ -143,31 +145,39 @@ export function StudentPayments() {
   );
 
   return (
-    <div className="bg-white rounded-lg shadow p-6">
+    <div className="bg-white rounded-lg shadow p-4">
       <h3 className="text-[#001F3F] mb-4">Recent Payments</h3>
 
       {/* Next Due Payment Banner */}
       {nextDuePayment && (
-        <div className={`mb-4 p-6 rounded-lg border-2 border-red-400 bg-red-50`}>
-          <div className="flex items-center gap-2 mb-2">
-            <span className={`inline-flex items-center gap-1 text-sm font-bold px-3 py-1 rounded-full animate-pulse bg-red-500 text-white`}>
-              ⚠ NEXT DUE
-            </span>
-            <span className={`text-base font-semibold text-red-700`}>
-              {nextDuePayment.status === 'overdue'
-                ? `Overdue by ${Math.abs(getDaysUntilDue(nextDuePayment.dueDate))} day(s)!`
-                : getDaysUntilDue(nextDuePayment.dueDate) === 0
-                  ? 'Due Today!'
-                  : `Due in ${getDaysUntilDue(nextDuePayment.dueDate)} day(s)`
-              }
-            </span>
+        <div className="mb-4 p-4 rounded-lg border border-red-200 bg-red-50/50 flex items-center justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <div className="bg-red-500 text-white p-2 rounded-full animate-pulse shadow-sm">
+              <AlertCircle className="w-4 h-4" />
+            </div>
+            <div>
+              <p className="text-xs font-bold text-red-700 flex items-center gap-2 uppercase tracking-tight">
+                Next Payment Due
+                <span className="text-[10px] bg-red-100 text-red-600 px-1.5 py-0.5 rounded border border-red-200">
+                  {nextDuePayment.status === 'overdue'
+                    ? `${Math.abs(getDaysUntilDue(nextDuePayment.dueDate))} days late`
+                    : getDaysUntilDue(nextDuePayment.dueDate) === 0
+                      ? 'Today'
+                      : `in ${getDaysUntilDue(nextDuePayment.dueDate)} days`
+                  }
+                </span>
+              </p>
+              <p className="text-lg font-bold text-red-900 leading-tight">
+                {currencyFormatter.format(nextDuePayment.amount)} · {nextDuePayment.type}
+              </p>
+            </div>
           </div>
-          <p className={`text-2xl font-bold text-red-800`}>
-            {currencyFormatter.format(nextDuePayment.amount)} · {nextDuePayment.type.toUpperCase()}
-          </p>
-          <p className="text-sm text-gray-500 mt-1">
-            Due: {nextDuePayment.dueDate ? new Date(nextDuePayment.dueDate).toLocaleDateString() : 'Not set'}
-          </p>
+          <div className="text-right hidden sm:block border-l pl-4 border-red-200">
+            <p className="text-[10px] text-gray-500 uppercase font-semibold">Due Date</p>
+            <p className="text-sm font-bold text-gray-700">
+              {moment(nextDuePayment.dueDate).format('MMM DD, YYYY')}
+            </p>
+          </div>
         </div>
       )}
 
@@ -178,108 +188,115 @@ export function StudentPayments() {
           {currentPayments.map((p) => {
             const isHi = highlightPaymentId && highlightPaymentId === p._id;
             const isNextDue = nextDuePayment && nextDuePayment._id === p._id;
+            const needsAction = p.status === 'pending' || p.status === 'overdue' || p.status === 'rejected';
+
             return (
-            <div
-              key={p._id}
-              id={`payment-row-${p._id}`}
-              className={`border rounded-lg p-4 flex flex-col md:flex-row md:items-center md:justify-between gap-3 ${
-                isHi
-                  ? 'border-[#FFD700] ring-2 ring-[#FFD700] bg-amber-50/40'
-                  : isNextDue
-                    ? (p.status === 'overdue'
-                        ? 'border-red-300 bg-red-50/50 ring-1 ring-red-200'
-                        : 'border-amber-300 bg-amber-50/50 ring-1 ring-amber-200')
-                    : 'border-gray-200'
-              }`}
-            >
-              <div>
-                <div className="flex items-center gap-2">
-                  <p className="font-semibold text-gray-900">
-                    {currencyFormatter.format(p.amount)} · {p.type.toUpperCase()}
-                  </p>
-                  {isNextDue && (
-                    <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded bg-red-500 text-white`}>NEXT DUE</span>
-                  )}
-                </div>
-                <p className="text-xs text-gray-500">
-                  Due:{' '}
-                  {p.dueDate ? new Date(p.dueDate).toLocaleDateString() : 'Not set'}
-                </p>
-                <p className="text-xs mt-1">
-                  Status:{' '}
-                  <span
-                    className={`px-2 py-0.5 rounded-full text-xs ${p.status === 'verified'
-                      ? 'bg-green-100 text-green-700'
-                      : p.status === 'paid'
-                        ? 'bg-blue-100 text-blue-700'
+              <div
+                key={p._id}
+                id={`payment-row-${p._id}`}
+                className={`border rounded-lg overflow-hidden transition-all duration-200 ${
+                  isHi
+                    ? 'border-amber-400 ring-1 ring-amber-400 bg-amber-50/30'
+                    : isNextDue
+                      ? 'border-red-200 bg-white'
+                      : 'border-gray-200 bg-white hover:border-gray-300'
+                }`}
+              >
+                <div className="p-4 flex flex-col md:flex-row md:items-center justify-between gap-4">
+                  <div className="flex items-start gap-3">
+                    <div className={`p-2 rounded-lg shrink-0 ${
+                      p.status === 'verified' || p.status === 'paid'
+                        ? 'bg-emerald-100 text-emerald-600'
                         : p.status === 'submitted'
-                          ? 'bg-indigo-100 text-indigo-800'
-                          : p.status === 'overdue'
-                            ? 'bg-red-100 text-red-700'
-                            : p.status === 'rejected'
-                              ? 'bg-gray-200 text-gray-800'
-                              : 'bg-yellow-100 text-yellow-800'
-                      }`}
-                  >
-                    {p.status}
-                  </span>
-                </p>
-                {p.receiptUrl && (
-                  <div className="mt-2 text-xs">
-                    <p className="text-gray-500 mb-1">Proof:</p>
-                    <a href={p.receiptUrl} target="_blank" rel="noreferrer" className="block w-16 h-16 border rounded overflow-hidden">
-                      <img
-                        src={p.receiptUrl}
-                        alt="Receipt"
-                        className="w-full h-full object-cover hover:scale-110 transition-transform"
-                        onError={(e) => {
-                          (e.target as HTMLImageElement).style.display = 'none';
-                          (e.target as HTMLImageElement).parentElement!.innerText = 'View';
-                          (e.target as HTMLImageElement).parentElement!.className = 'text-blue-600 underline';
-                        }}
-                      />
-                    </a>
+                          ? 'bg-indigo-100 text-indigo-600'
+                          : 'bg-amber-100 text-amber-600'
+                    }`}>
+                      <PhilippinePeso className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <div className="flex items-center gap-2 mb-0.5">
+                        <span className="font-bold text-gray-900">{currencyFormatter.format(p.amount)}</span>
+                        <span className="text-xs font-medium text-gray-400 px-1.5 py-0.5 bg-gray-50 rounded uppercase">{p.type}</span>
+                        {isNextDue && (
+                          <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-red-500 text-white tracking-tight">NEXT DUE</span>
+                        )}
+                      </div>
+                      <div className="flex items-center gap-3 text-xs">
+                        <span className="text-gray-500">
+                          Due: {moment(p.dueDate).format('MMM DD, YYYY')}
+                        </span>
+                        <span className={`flex items-center gap-1 font-medium capitalize ${
+                          p.status === 'verified' ? 'text-emerald-600' :
+                          p.status === 'submitted' ? 'text-indigo-600' :
+                          p.status === 'overdue' ? 'text-red-600' :
+                          'text-amber-600'
+                        }`}>
+                          <span className={`w-1.5 h-1.5 rounded-full ${
+                            p.status === 'verified' ? 'bg-emerald-500' :
+                            p.status === 'submitted' ? 'bg-indigo-500' :
+                            p.status === 'overdue' ? 'bg-red-500' :
+                            'bg-amber-500'
+                          }`} />
+                          {p.status}
+                        </span>
+                      </div>
+                    </div>
                   </div>
-                )}
+
+                  <div className="flex flex-wrap items-center gap-2 md:justify-end">
+                    {/* Payment Slip Button - Always available for unpaid or verified/paid */}
+                    {(needsAction || p.status === 'verified' || p.status === 'paid') && (
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="h-8 text-xs border-emerald-600 text-emerald-700 hover:bg-emerald-50 hover:text-emerald-800"
+                        onClick={() => generatePaymentSlip(p, user)}
+                      >
+                        Download Slip
+                      </Button>
+                    )}
+
+                    {/* Submit Proof Section */}
+                    {needsAction && (p.status === 'rejected' || !p.receiptUrl) && (
+                      <div className="flex items-center gap-2 border-l pl-2 ml-2 border-gray-200">
+                        <label className="cursor-pointer">
+                          <input
+                            type="file"
+                            accept="image/*"
+                            className="hidden"
+                            onChange={(e) => handleFileChange(p._id, e.target.files ? e.target.files[0] : null)}
+                          />
+                          <div className={`px-3 py-1.5 rounded text-xs border transition-colors ${
+                            files[p._id] ? 'bg-blue-50 border-blue-200 text-blue-700' : 'bg-gray-50 border-gray-200 text-gray-600 hover:bg-gray-100'
+                          }`}>
+                            {files[p._id] ? files[p._id]?.name.slice(0, 10) + '...' : 'Select Receipt'}
+                          </div>
+                        </label>
+                        <Button
+                          size="sm"
+                          className="h-8 bg-[#001F3F] text-white hover:bg-[#003366] text-xs"
+                          onClick={() => handleSubmitReceipt(p)}
+                          disabled={submittingId === p._id || !files[p._id]}
+                        >
+                          {submittingId === p._id ? '...' : 'Upload'}
+                        </Button>
+                      </div>
+                    )}
+
+                    {p.receiptUrl && (
+                      <a
+                        href={p.receiptUrl}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="flex items-center gap-2 text-xs text-blue-600 hover:underline px-2 py-1 bg-blue-50 rounded"
+                      >
+                        View Proof
+                      </a>
+                    )}
+                  </div>
+                </div>
               </div>
-
-
-              {(p.status === 'pending' || p.status === 'overdue' || p.status === 'rejected') && (p.status === 'rejected' || !p.receiptUrl) && (
-                <div className="flex flex-col items-stretch gap-2 w-full md:w-80">
-                  <div className="flex gap-2">
-                    <input
-                      type="file"
-                      accept="image/*"
-                      onChange={(e) =>
-                        handleFileChange(p._id, e.target.files ? e.target.files[0] : null)
-                      }
-                      className="text-xs border rounded p-2 flex-grow min-w-0"
-                    />
-                    <Button
-                      size="sm"
-                      className="bg-[#001F3F] text-white hover:bg-[#003366] whitespace-nowrap"
-                      onClick={() => handleSubmitReceipt(p)}
-                      disabled={submittingId === p._id}
-                    >
-                      {submittingId === p._id ? '...' : 'Submit'}
-                    </Button>
-                  </div>
-                </div>
-              )}
-
-              {(p.status === 'verified' || p.status === 'paid') && (
-                <div className="flex justify-end w-full md:w-auto mt-2 md:mt-0">
-                  <Button
-                    size="sm"
-                    className="bg-emerald-600 text-white hover:bg-emerald-700 whitespace-nowrap"
-                    onClick={() => generatePaymentSlip(p, user)}
-                  >
-                    Download Slip
-                  </Button>
-                </div>
-              )}
-            </div>
-          );
+            );
           })}
         </div>
       )}

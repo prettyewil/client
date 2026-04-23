@@ -82,45 +82,45 @@ export function StudentDashboard({ onNavigate }: StudentDashboardProps) {
       {/* Summary Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {/* Balance Card */}
-        <div className="bg-white rounded-lg shadow p-6 border-l-4 border-[#FFD700]">
-          <div className="flex items-center justify-between mb-4">
-            <div className="bg-[#FFD700] text-[#001F3F] p-3 rounded-lg">
-              <PhilippinePeso className="w-6 h-6" />
+        <div className="bg-white rounded-lg shadow p-4 border-l-4 border-[#FFD700]">
+          <div className="flex items-center justify-between mb-2">
+            <div className="bg-[#FFD700] text-[#001F3F] p-2 rounded-lg">
+              <PhilippinePeso className="w-5 h-5" />
             </div>
             {overdueCount > 0 && (
-              <AlertCircle className="w-5 h-5 text-red-500" />
+              <AlertCircle className="w-4 h-4 text-red-500" />
             )}
           </div>
-          <p className="text-3xl mb-1">₱{totalDue.toFixed(2)}</p>
-          <p className="text-sm text-gray-600">Current Balance</p>
+          <p className="text-2xl mb-0.5">₱{totalDue.toFixed(2)}</p>
+          <p className="text-xs text-gray-600">Current Balance</p>
           {overdueCount > 0 && (
-            <p className="text-xs text-red-600 mt-2">{overdueCount} overdue payment(s)</p>
+            <p className="text-[10px] text-red-600 mt-1">{overdueCount} overdue payment(s)</p>
           )}
         </div>
 
         {/* Maintenance Requests */}
-        <div className="bg-white rounded-lg shadow p-6 border-l-4 border-[#001F3F]">
-          <div className="flex items-center justify-between mb-4">
-            <div className="bg-[#001F3F] text-white p-3 rounded-lg">
-              <Wrench className="w-6 h-6" />
+        <div className="bg-white rounded-lg shadow p-4 border-l-4 border-[#001F3F]">
+          <div className="flex items-center justify-between mb-2">
+            <div className="bg-[#001F3F] text-white p-2 rounded-lg">
+              <Wrench className="w-5 h-5" />
             </div>
             {pendingRequests > 0 && (
-              <span className="bg-blue-100 text-blue-700 text-xs px-2 py-1 rounded">Active</span>
+              <span className="bg-blue-100 text-blue-700 text-[10px] px-1.5 py-0.5 rounded">Active</span>
             )}
           </div>
-          <p className="text-3xl mb-1">{pendingRequests}</p>
-          <p className="text-sm text-gray-600">Pending Requests</p>
+          <p className="text-2xl mb-0.5">{pendingRequests}</p>
+          <p className="text-xs text-gray-600">Pending Requests</p>
         </div>
 
         {/* Announcements */}
-        <div className="bg-white rounded-lg shadow p-6 border-l-4 border-blue-500">
-          <div className="flex items-center justify-between mb-4">
-            <div className="bg-blue-500 text-white p-3 rounded-lg">
-              <Megaphone className="w-6 h-6" />
+        <div className="bg-white rounded-lg shadow p-4 border-l-4 border-blue-500">
+          <div className="flex items-center justify-between mb-2">
+            <div className="bg-blue-500 text-white p-2 rounded-lg">
+              <Megaphone className="w-5 h-5" />
             </div>
           </div>
-          <p className="text-3xl mb-1">{announcements.length}</p>
-          <p className="text-sm text-gray-600">Active Announcements</p>
+          <p className="text-2xl mb-0.5">{announcements.length}</p>
+          <p className="text-xs text-gray-600">Active Announcements</p>
         </div>
       </div>
 
@@ -128,9 +128,9 @@ export function StudentDashboard({ onNavigate }: StudentDashboardProps) {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div className="flex flex-col gap-6">
           {/* Announcements Section */}
-          <div className="bg-white rounded-lg shadow p-6">
+          <div className="bg-white rounded-lg shadow p-4">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-[#001F3F]">Announcements</h3>
+              <h3 className="text-[#001F3F] text-base font-semibold">Announcements</h3>
             </div>
             {announcements.length > 0 ? (
               <div className="space-y-3 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar">
@@ -164,8 +164,8 @@ export function StudentDashboard({ onNavigate }: StudentDashboardProps) {
           </div>
 
           {/* My Maintenance Requests */}
-          <div className="bg-white rounded-lg shadow p-6">
-            <h3 className="text-[#001F3F] mb-4">My Maintenance Requests</h3>
+          <div className="bg-white rounded-lg shadow p-4">
+            <h3 className="text-[#001F3F] text-base font-semibold mb-4">My Maintenance Requests</h3>
             <div className="space-y-3">
               {studentRequests.length > 0 ? (
                 studentRequests.map((request) => (
