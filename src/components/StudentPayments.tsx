@@ -13,6 +13,7 @@ import {
   PaginationPrevious,
 } from "./ui/pagination";
 import { takeNotificationFocus } from '../utils/notificationFocus';
+import { generatePaymentSlip } from '../utils/pdfGenerator';
 
 interface Payment {
   _id: string;
@@ -263,6 +264,18 @@ export function StudentPayments() {
                       {submittingId === p._id ? '...' : 'Submit'}
                     </Button>
                   </div>
+                </div>
+              )}
+
+              {(p.status === 'verified' || p.status === 'paid') && (
+                <div className="flex justify-end w-full md:w-auto mt-2 md:mt-0">
+                  <Button
+                    size="sm"
+                    className="bg-emerald-600 text-white hover:bg-emerald-700 whitespace-nowrap"
+                    onClick={() => generatePaymentSlip(p, user)}
+                  >
+                    Download Slip
+                  </Button>
                 </div>
               )}
             </div>
