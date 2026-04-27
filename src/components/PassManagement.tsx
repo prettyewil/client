@@ -16,9 +16,11 @@ import {
     Calendar,
     Clock,
     User,
-    Info
+    Info,
+    Printer
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import { generatePassPermit } from '../utils/pdfGenerator';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from './ui/dialog';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
@@ -147,6 +149,12 @@ export function PassManagement() {
                 Swal.fire('Error', error.response?.data?.message || 'Failed to delete request', 'error');
             }
         }
+    };
+
+    const handlePrintPermit = (pass: any) => {
+        // We need the student's full profile for the permit, but pass.student usually has enough
+        // If not, we might need to fetch more, but let's try with what we have.
+        generatePassPermit(pass, pass.student || user);
     };
 
     const exportToPDF = () => {
@@ -386,7 +394,18 @@ export function PassManagement() {
                                                         <Trash2 className="w-4 h-4" />
                                                     </Button>
                                                 )}
-                                                {pass.status !== 'pending' && (
+                                                {pass.status === 'approved' && (
+                                                    <Button 
+                                                        size="sm" 
+                                                        variant="outline" 
+                                                        onClick={() => handlePrintPermit(pass)}
+                                                        className="text-[#001F3F] border-[#001F3F] hover:bg-blue-50"
+                                                        title="Print Permit"
+                                                    >
+                                                        <Printer className="w-4 h-4" />
+                                                    </Button>
+                                                )}
+                                                {pass.status !== 'pending' && pass.status !== 'approved' && (
                                                     <span className="text-gray-400 text-xs italic">Processed</span>
                                                 )}
                                             </div>

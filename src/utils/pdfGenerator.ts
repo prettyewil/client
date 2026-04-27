@@ -200,3 +200,146 @@ export const generatePaymentSlip = (payment: any, user: any) => {
 
     doc.save(`Payment_Slip_${moment().format('YYYYMMDD')}.pdf`);
 };
+
+export const generatePassPermit = (pass: any, user: any) => {
+    // Create new A4 portrait PDF
+    const doc = new jsPDF({
+        orientation: 'portrait',
+        unit: 'mm',
+        format: 'a4'
+    });
+
+    const startX = 20;
+    let currY = 20;
+
+    // Header
+    doc.setFont("times", "normal");
+    doc.setFontSize(10);
+    doc.text("BUKIDNON STATE UNIVERSITY", 105, currY, { align: 'center' });
+    currY += 5;
+    doc.text("Malaybalay City, Bukidnon 8700", 105, currY, { align: 'center' });
+    currY += 5;
+    doc.setFontSize(8);
+    doc.text("Tel (088) 813-5661 to 5663; TeleFax (088) 813-2717, www.buksu.edu.ph", 105, currY, { align: 'center' });
+
+    currY += 15;
+    doc.setFontSize(14);
+    doc.setFont("times", "bold");
+    doc.text("CAMPUS OUT PERMIT", 105, currY, { align: 'center' });
+
+    currY += 15;
+    doc.setFontSize(11);
+    doc.setFont("times", "normal");
+    
+    // Dorm Checkbox
+    const dormName = user?.studentProfile?.dormName || 'KILALA'; // Default to KILALA as in example
+    doc.rect(startX, currY - 4, 15, 6);
+    doc.line(startX + 2, currY - 1, startX + 5, currY + 1);
+    doc.line(startX + 5, currY + 1, startX + 13, currY - 3);
+    doc.text(dormName.toUpperCase(), startX + 18, currY);
+    doc.line(startX + 18, currY + 1, startX + 100, currY + 1);
+
+    currY += 12;
+    const today = moment().format('MMMM DD, YYYY');
+    doc.text("Date:", startX, currY);
+    doc.line(startX + 12, currY + 1, startX + 60, currY + 1);
+    doc.text(today, startX + 15, currY);
+
+    currY += 8;
+    const name = user?.fullName || user?.name || `${user?.firstName || ''} ${user?.lastName || ''}`.trim();
+    doc.text("Name:", startX, currY);
+    doc.line(startX + 15, currY + 1, startX + 100, currY + 1);
+    doc.text(name, startX + 18, currY);
+
+    currY += 8;
+    doc.text("Purpose: (Specify Destination/Address)", startX, currY);
+    doc.line(startX, currY + 6, startX + 170, currY + 6);
+    doc.text(pass.reason || '', startX + 5, currY + 5);
+
+    currY += 15;
+    // Checkboxes for types
+    const passType = pass.type || 'Going home';
+    
+    // Going Home
+    doc.rect(startX, currY - 4, 6, 6);
+    if (passType === 'Going home') {
+        doc.line(startX + 1, currY - 1, startX + 3, currY + 1);
+        doc.line(startX + 3, currY + 1, startX + 5, currY - 3);
+    }
+    doc.text("Going Home:", startX + 10, currY);
+    doc.line(startX + 35, currY + 1, startX + 150, currY + 1);
+
+    currY += 8;
+    doc.text("Parents Signature:", startX + 10, currY);
+    doc.line(startX + 45, currY + 1, startX + 150, currY + 1);
+
+    currY += 8;
+    doc.rect(startX, currY - 4, 6, 6);
+    if (passType === 'Overnight') {
+        doc.line(startX + 1, currY - 1, startX + 3, currY + 1);
+        doc.line(startX + 3, currY + 1, startX + 5, currY - 3);
+    }
+    doc.text("Overnight Stay:", startX + 10, currY);
+    doc.line(startX + 40, currY + 1, startX + 150, currY + 1);
+
+    currY += 8;
+    doc.rect(startX, currY - 4, 6, 6);
+    if (passType === 'Late night pass') {
+        doc.line(startX + 1, currY - 1, startX + 3, currY + 1);
+        doc.line(startX + 3, currY + 1, startX + 5, currY - 3);
+    }
+    doc.text("Late Pass:", startX + 10, currY);
+    doc.line(startX + 30, currY + 1, startX + 150, currY + 1);
+
+    currY += 15;
+    doc.text("Date of Departure:", startX, currY);
+    doc.line(startX + 35, currY + 1, startX + 100, currY + 1);
+    doc.text(moment(pass.startDate).format('MMMM DD, YYYY'), startX + 40, currY);
+
+    currY += 8;
+    doc.text("Time:", startX, currY);
+    doc.line(startX + 15, currY + 1, startX + 60, currY + 1);
+    doc.text(moment(pass.startDate).format('hh:mm A'), startX + 20, currY);
+
+    currY += 8;
+    doc.text("Expected Date of Arrival:", startX, currY);
+    doc.line(startX + 45, currY + 1, startX + 100, currY + 1);
+    doc.text(moment(pass.endDate).format('MMMM DD, YYYY'), startX + 50, currY);
+
+    currY += 8;
+    doc.text("Time:", startX, currY);
+    doc.line(startX + 15, currY + 1, startX + 60, currY + 1);
+    doc.text(moment(pass.endDate).format('hh:mm A'), startX + 20, currY);
+
+    currY += 25;
+    // Signatures
+    doc.setFont("times", "bold");
+    doc.text("Kisha Claire C. Golucino", startX, currY);
+    doc.setFont("times", "normal");
+    doc.line(startX, currY + 1, startX + 60, currY + 1);
+    doc.setFontSize(9);
+    doc.text("Name and Signature of Employee", startX, currY + 5);
+
+    currY += 25;
+    doc.setFontSize(11);
+    doc.text("Noted:", startX, currY);
+    doc.line(startX + 15, currY + 1, startX + 80, currY + 1);
+    doc.text("Security Officer", startX + 30, currY + 8);
+
+    doc.text("Approved:", 120, currY);
+    doc.setFont("times", "bold");
+    doc.text("MR. NEIL RYAN D. BAQUILER", 140, currY);
+    doc.setFont("times", "normal");
+    doc.line(140, currY + 1, 190, currY + 1);
+    doc.text("Residence Hall Manager", 150, currY + 8);
+
+    // Footer
+    currY = 275;
+    doc.setFontSize(8);
+    doc.text("Document Code: DORM-F-009", startX, currY);
+    doc.text("Revision No.: 01", 85, currY);
+    doc.text("Issue No.: 01", 135, currY);
+    doc.text("Issue Date: March 25, 2021", 170, currY, { align: 'right' });
+
+    doc.save(`Pass_Permit_${pass._id}.pdf`);
+};
