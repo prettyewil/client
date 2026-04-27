@@ -351,7 +351,7 @@ function StudentProfile() {
                 {user?.name?.split(' ').map(n => n[0]).join('')}
               </div>
               <div>
-                <h3 className-[#001F3F] text-xl font-bold">{user?.name}</h3>
+                <h3 className="text-[#001F3F] text-xl font-bold">{user?.name}</h3>
                 <p className="text-gray-600">{user?.email}</p>
                 {isStudent && user?.studentProfile?.roomNumber && (
                   <p className="text-gray-600 text-sm mt-1">Room {user.studentProfile.roomNumber}</p>
