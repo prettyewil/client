@@ -76,11 +76,11 @@ function AppContent() {
 
   // Pending/Unverified users: everyone completes profile / waits for admin approval
   if (userStatus === 'pending' || userStatus === 'unverified') {
-    // If student ID is missing, they need to complete their profile
-    if (!user.studentId) {
+    // Only students are forced to CompleteProfile if studentId is missing
+    if (user.role === 'student' && !user.studentId) {
       return <CompleteProfile />;
     }
-    // If student ID is present, they are waiting for validation
+    // Non-students or students with IDs wait for validation
     return <PendingValidation />;
   }
 
@@ -182,6 +182,8 @@ function StudentProfile() {
     emergencyContactPhone: user?.studentProfile?.emergencyContactPhone || ''
   });
 
+  const isStudent = user?.role === 'student';
+
   // Sync formData with user when user updates
   useEffect(() => {
     if (user) {
@@ -261,15 +263,17 @@ function StudentProfile() {
                   onChange={(e) => setFormData({ ...formData, name: e.target.value.replace(/[^a-zA-Z\sñÑ-]/g, '') })}
                 />
               </div>
-              <div>
-                <label className="block text-sm text-gray-700">Student ID</label>
-                <input
-                  type="text"
-                  className="w-full px-3 py-2 border rounded"
-                  value={formData.studentId}
-                  onChange={(e) => setFormData({ ...formData, studentId: e.target.value.replace(/[^0-9-]/g, '') })}
-                />
-              </div>
+              {isStudent && (
+                <div>
+                  <label className="block text-sm text-gray-700">Student ID</label>
+                  <input
+                    type="text"
+                    className="w-full px-3 py-2 border rounded"
+                    value={formData.studentId}
+                    onChange={(e) => setFormData({ ...formData, studentId: e.target.value.replace(/[^0-9-]/g, '') })}
+                  />
+                </div>
+              )}
               <div>
                 <label className="block text-sm text-gray-700">Email</label>
                 <input
@@ -347,17 +351,21 @@ function StudentProfile() {
                 {user?.name?.split(' ').map(n => n[0]).join('')}
               </div>
               <div>
-                <h3 className="text-[#001F3F] text-xl font-bold">{user?.name}</h3>
+                <h3 className-[#001F3F] text-xl font-bold">{user?.name}</h3>
                 <p className="text-gray-600">{user?.email}</p>
-                <p className="text-gray-600 text-sm mt-1">Room {user?.studentProfile?.roomNumber}</p>
+                {isStudent && user?.studentProfile?.roomNumber && (
+                  <p className="text-gray-600 text-sm mt-1">Room {user.studentProfile.roomNumber}</p>
+                )}
               </div>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <p className="text-sm text-gray-600 mb-1">Student ID</p>
-                <p className="text-[#001F3F] font-semibold">{user?.studentId || 'N/A'}</p>
-              </div>
+              {isStudent && (
+                <div>
+                  <p className="text-sm text-gray-600 mb-1">Student ID</p>
+                  <p className="text-[#001F3F] font-semibold">{user?.studentId || 'N/A'}</p>
+                </div>
+              )}
               <div>
                 <p className="text-sm text-gray-600 mb-1">Phone Number</p>
                 <p className="text-[#001F3F]">{user?.studentProfile?.phoneNumber || 'N/A'}</p>

@@ -10,7 +10,7 @@ interface Room {
 }
 
 export function CompleteProfile() {
-    const { updateProfile, logout } = useAuth(); // Removed 'user' unused
+    const { user, updateProfile, logout } = useAuth();
     const [loading, setLoading] = useState(false);
     const [formData, setFormData] = useState({
         studentId: '',
@@ -62,6 +62,8 @@ export function CompleteProfile() {
         }
     };
 
+    const isStudent = user?.role === 'student';
+
     return (
         <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
             <div className="sm:mx-auto sm:w-full sm:max-w-md">
@@ -77,22 +79,24 @@ export function CompleteProfile() {
                 <div className="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
                     <form className="space-y-6" onSubmit={handleSubmit}>
 
-                        <div>
-                            <label htmlFor="studentId" className="block text-sm font-medium text-gray-700">
-                                Student ID <span className="text-red-500">*</span>
-                            </label>
-                            <div className="mt-1">
-                                <input
-                                    id="studentId"
-                                    name="studentId"
-                                    type="text"
-                                    required
-                                    className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-[#001F3F] focus:border-[#001F3F] sm:text-sm"
-                                    value={formData.studentId}
-                                    onChange={(e) => setFormData({ ...formData, studentId: e.target.value })}
-                                />
+                        {isStudent && (
+                            <div>
+                                <label htmlFor="studentId" className="block text-sm font-medium text-gray-700">
+                                    Student ID <span className="text-red-500">*</span>
+                                </label>
+                                <div className="mt-1">
+                                    <input
+                                        id="studentId"
+                                        name="studentId"
+                                        type="text"
+                                        required
+                                        className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-[#001F3F] focus:border-[#001F3F] sm:text-sm"
+                                        value={formData.studentId}
+                                        onChange={(e) => setFormData({ ...formData, studentId: e.target.value })}
+                                    />
+                                </div>
                             </div>
-                        </div>
+                        )}
 
                         {/* Room selection removed */}
 
