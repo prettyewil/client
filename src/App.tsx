@@ -66,100 +66,11 @@ function AppContent() {
 
   // ... (inside AppContent)
 
-  // Force redirect if user is rejected (optional, maybe just logout?)
-  const userStatus = (user as any).status || (user as any).studentProfile?.status;
-
-  if (userStatus === 'rejected') {
-    return <Login />;
-  }
-
-  // Pending/Unverified users: everyone completes profile / waits for admin approval
-  if (userStatus === 'pending' || userStatus === 'unverified') {
-    // If student ID is missing, they need to complete their profile
-    if (!user.studentId) {
-      return <CompleteProfile />;
-    }
-    // If student ID is present, they are waiting for validation
-    return <PendingValidation />;
-  }
-
-  const renderPage = () => {
-    if (user.role === 'admin' || user.role === 'manager') {
-      switch (currentPage) {
-        case 'dashboard':
-          return <AdminDashboard onNavigate={setCurrentPage} />;
-        case 'profile':
-          return <StudentProfile />;
-        case 'rooms':
-          return <RoomsManagement />;
-        case 'students':
-          // Use UserManagement for admin users
-          return <UserManagement />;
-        case 'payments':
-          return <PaymentsManagement />;
-        case 'maintenance':
-          return <MaintenanceManagement />;
-        case 'attendance':
-          return <AttendanceManagement />;
-        case 'tasks':
-          return <TaskManagement />;
-        case 'announcements':
-          return <AnnouncementsManagement />;
-        case 'logs':
-          return <SystemLogs />;
-        case 'settings':
-          return <SystemSettings />;
-        default:
-          return <AdminDashboard onNavigate={setCurrentPage} />;
-      }
-    } else if (user.role === 'staff') { // Staff role
-      switch (currentPage) {
-        case 'dashboard':
-          // Staff might share admin dashboard or have a reduced one. 
-          // For now, let's reuse AdminDashboard or give them access to common modules.
-          // Prompt says: "Staff can view room assignments, student lists"
-          return <AdminDashboard onNavigate={setCurrentPage} />;
-        case 'profile':
-          return <StudentProfile />;
-        case 'rooms':
-          return <RoomsManagement />;
-        case 'students':
-          return <UserManagement />;
-        case 'maintenance':
-          return <MaintenanceManagement />;
-        case 'attendance':
-          return <AttendanceManagement />;
-        case 'tasks':
-          return <TaskManagement />;
-        default:
-          return <AdminDashboard onNavigate={setCurrentPage} />;
-      }
-    } else { // Student role
-      switch (currentPage) {
-        case 'dashboard':
-          return <StudentDashboard onNavigate={setCurrentPage} />;
-        case 'profile':
-          return <StudentProfile />;
-        case 'payments':
-          return <StudentPayments />;
-        case 'maintenance':
-          return <MaintenanceManagement />; // Assuming MaintenanceManagement can be used by students too, or needs a StudentMaintenance component
-        case 'tasks':
-          return <TaskManagement />; // Assuming CleaningSchedule can be used by students too, or needs a StudentCleaningSchedule component
-        case 'attendance':
-          return <AttendanceManagement />;
-        case 'announcements':
-          return <AnnouncementsManagement />; // Assuming AnnouncementsManagement can be used by students too
-        default:
-          return <StudentDashboard onNavigate={setCurrentPage} />;
-      }
-    }
-  };
-
+  // After login, just show a white background with "error?" text
   return (
-    <Layout currentPage={currentPage} onNavigate={setCurrentPage}>
-      {renderPage()}
-    </Layout>
+    <div className="min-h-screen bg-white flex items-center justify-center">
+      <p className="text-gray-800 text-lg font-medium">error?</p>
+    </div>
   );
 }
 
