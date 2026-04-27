@@ -61,9 +61,10 @@ export function PassManagement() {
         try {
             const res = await axios.get('/api/passes');
             setPasses(res.data);
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error fetching passes:', error);
-            Swal.fire('Error', 'Failed to load passes', 'error');
+            const errMsg = error.response?.data?.message || error.message || 'Failed to load passes';
+            Swal.fire('Error', errMsg, 'error');
         } finally {
             setIsLoading(false);
         }
