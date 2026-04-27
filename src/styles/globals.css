@@ -3,7 +3,7 @@
 :root {
   --primary-navy: #001F3F;
   --accent-yellow: #FFD700;
-  --bg-gray: #FFFFFF;
+  --bg-gray: #F5F5F5;
   --card-white: #FFFFFF;
   --text-dark: #333333;
   --text-light: #666666;
@@ -79,7 +79,7 @@ button {
   border: none;
 }
 
-.rbc-agenda-view table.rbc-agenda-table thead > tr > th {
+.rbc-agenda-view table.rbc-agenda-table thead>tr>th {
   background-color: var(--primary-navy);
   color: white;
   padding: 12px;
@@ -89,7 +89,7 @@ button {
   letter-spacing: 0.05em;
 }
 
-.rbc-agenda-view table.rbc-agenda-table tbody > tr > td {
+.rbc-agenda-view table.rbc-agenda-table tbody>tr>td {
   padding: 16px 12px;
   vertical-align: middle;
   border-bottom: 1px solid #eee;
@@ -111,7 +111,7 @@ button {
   font-weight: 500;
 }
 
-.rbc-agenda-view table.rbc-agenda-table tbody > tr:hover {
+.rbc-agenda-view table.rbc-agenda-table tbody>tr:hover {
   background-color: #f9fafb;
 }
 
