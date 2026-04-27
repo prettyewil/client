@@ -59,7 +59,7 @@ export function PassManagement() {
     const fetchPasses = async () => {
         setIsLoading(true);
         try {
-            const res = await axios.get('/api/passes');
+            const res = await axios.get('/api/pass-management');
             setPasses(res.data);
         } catch (error: any) {
             console.error('Error fetching passes:', error);
@@ -78,7 +78,7 @@ export function PassManagement() {
         }
 
         try {
-            await axios.post('/api/passes', formData);
+            await axios.post('/api/pass-management', formData);
             Swal.fire('Success', 'Pass request submitted successfully', 'success');
             setIsModalOpen(false);
             setFormData({
@@ -121,7 +121,7 @@ export function PassManagement() {
         }
 
         try {
-            await axios.patch(`/api/passes/${id}/status`, { status, rejectionReason });
+            await axios.patch(`/api/pass-management/${id}/status`, { status, rejectionReason });
             Swal.fire('Success', `Pass request ${status}`, 'success');
             fetchPasses();
         } catch (error: any) {
@@ -140,7 +140,7 @@ export function PassManagement() {
 
         if (confirm.isConfirmed) {
             try {
-                await axios.delete(`/api/passes/${id}`);
+                await axios.delete(`/api/pass-management/${id}`);
                 Swal.fire('Deleted', 'Request removed.', 'success');
                 fetchPasses();
             } catch (error: any) {
