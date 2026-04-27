@@ -21,6 +21,7 @@ import { StudentPayments } from './components/StudentPayments';
 import { CompleteProfile } from './components/CompleteProfile';
 import { PendingValidation } from './components/PendingValidation';
 import { SystemSettings } from './components/SystemSettings';
+import { ErrorPage } from './components/ErrorPage';
 
 
 function AppContent() {
@@ -93,7 +94,6 @@ function AppContent() {
         case 'rooms':
           return <RoomsManagement />;
         case 'students':
-          // Use UserManagement for admin users
           return <UserManagement />;
         case 'payments':
           return <PaymentsManagement />;
@@ -110,14 +110,11 @@ function AppContent() {
         case 'settings':
           return <SystemSettings />;
         default:
-          return <AdminDashboard onNavigate={setCurrentPage} />;
+          return <ErrorPage code="404" title="PAGE NOT FOUND" onAction={() => setCurrentPage('dashboard')} />;
       }
-    } else if (user.role === 'staff') { // Staff role
+    } else if (user.role === 'staff') {
       switch (currentPage) {
         case 'dashboard':
-          // Staff might share admin dashboard or have a reduced one. 
-          // For now, let's reuse AdminDashboard or give them access to common modules.
-          // Prompt says: "Staff can view room assignments, student lists"
           return <AdminDashboard onNavigate={setCurrentPage} />;
         case 'profile':
           return <StudentProfile />;
@@ -132,9 +129,9 @@ function AppContent() {
         case 'tasks':
           return <TaskManagement />;
         default:
-          return <AdminDashboard onNavigate={setCurrentPage} />;
+          return <ErrorPage code="404" title="PAGE NOT FOUND" onAction={() => setCurrentPage('dashboard')} />;
       }
-    } else { // Student role
+    } else {
       switch (currentPage) {
         case 'dashboard':
           return <StudentDashboard onNavigate={setCurrentPage} />;
@@ -143,15 +140,15 @@ function AppContent() {
         case 'payments':
           return <StudentPayments />;
         case 'maintenance':
-          return <MaintenanceManagement />; // Assuming MaintenanceManagement can be used by students too, or needs a StudentMaintenance component
+          return <MaintenanceManagement />;
         case 'tasks':
-          return <TaskManagement />; // Assuming CleaningSchedule can be used by students too, or needs a StudentCleaningSchedule component
+          return <TaskManagement />;
         case 'attendance':
           return <AttendanceManagement />;
         case 'announcements':
-          return <AnnouncementsManagement />; // Assuming AnnouncementsManagement can be used by students too
+          return <AnnouncementsManagement />;
         default:
-          return <StudentDashboard onNavigate={setCurrentPage} />;
+          return <ErrorPage code="404" title="PAGE NOT FOUND" onAction={() => setCurrentPage('dashboard')} />;
       }
     }
   };

@@ -1,4 +1,5 @@
 import React, { Component, ErrorInfo, ReactNode } from 'react';
+import { ErrorPage } from './ErrorPage';
 
 interface Props {
     children: ReactNode;
@@ -26,23 +27,13 @@ class ErrorBoundary extends Component<Props, State> {
     public render() {
         if (this.state.hasError) {
             return (
-                <div className="min-h-screen flex items-center justify-center bg-gray-100 p-4">
-                    <div className="bg-white rounded-lg shadow-xl p-8 max-w-md w-full text-center">
-                        <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                            <span className="text-3xl">⚠️</span>
-                        </div>
-                        <h1 className="text-xl font-bold text-gray-900 mb-2">Something went wrong</h1>
-                        <p className="text-gray-600 mb-6">
-                            {this.state.error?.message || 'An unexpected error occurred.'}
-                        </p>
-                        <button
-                            onClick={() => window.location.reload()}
-                            className="bg-[#001F3F] text-white px-6 py-2 rounded-lg hover:bg-[#003366] transition-colors"
-                        >
-                            Reload Page
-                        </button>
-                    </div>
-                </div>
+                <ErrorPage 
+                    code="500" 
+                    title="SYSTEM ERROR" 
+                    message={this.state.error?.message || "An unexpected error occurred in the DormSync system."}
+                    onAction={() => window.location.reload()}
+                    actionText="Retry System"
+                />
             );
         }
 
