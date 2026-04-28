@@ -13,15 +13,6 @@ import { useAuth } from '../context/AuthContext';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from './ui/dialog';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
-import { usePagination } from '../hooks/usePagination';
-import {
-  Pagination,
-  PaginationContent,
-  PaginationItem,
-  PaginationLink,
-  PaginationNext,
-  PaginationPrevious,
-} from "./ui/pagination";
 
 interface AttendanceLogDto {
   _id: string; // Changed from id: number
@@ -298,49 +289,57 @@ export function AttendanceManagement() {
     return date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
   };
 
-  const filteredAttendance = attendance.filter((log) => {
-    if (!searchTerm) return true;
-    const student = typeof log.student === 'string' ? null : log.student;
-    const name = student?.name || 'Unknown';
-    const room = student?.studentProfile?.roomNumber || 'N/A';
-    const term = searchTerm.toLowerCase();
-    
-    return name.toLowerCase().includes(term) || room.toLowerCase().includes(term);
+  // Combine studentsList with attendance to create a full roster
+  const combinedAttendance = studentsList.map(student => {
+    const log = attendance.find(a => {
+      const sId = typeof a.student === 'string' ? a.student : a.student?._id;
+      return sId === student._id;
+    });
+
+    return {
+      _id: student._id,
+      name: student.name,
+      roomNumber: student.studentProfile?.roomNumber || 'Unassigned',
+      logId: log?._id || null,
+      timeIn: log?.timeIn || null,
+      timeOut: log?.timeOut || null,
+      status: log?.status || 'absent'
+    };
   });
+
+  const filteredCombined = combinedAttendance.filter((record) => {
+    if (!searchTerm) return true;
+    const term = searchTerm.toLowerCase();
+    return record.name.toLowerCase().includes(term) || record.roomNumber.toLowerCase().includes(term);
+  });
+
+  const presentCount = filteredCombined.filter(a => a.status === 'present').length;
+  const lateCount = filteredCombined.filter(a => a.status === 'late').length;
   
-  const presentCount = filteredAttendance.filter(a => a.status === 'present').length;
-  const lateCount = filteredAttendance.filter(a => a.status === 'late').length;
-
-  // Calculate Absent: 
-  // 1. Explicitly marked 'absent' in logs (manual override or past logic)
-  // 2. PLUS students who haven't checked in by 11:59 PM
-  const explicitAbsentCount = filteredAttendance.filter(a => a.status === 'absent').length;
-
   const isToday = selectedDate === new Date().toISOString().split('T')[0];
   const currentTime = new Date();
-
-  // Absent only counts if day is effectively over (passed 11:59 PM for today)
-  // Since we can't check 'passed 11:59PM' for *today* while it is *today* (it would be tomorrow),
-  // we count absent for today only if the time is essentially end of day? 
-  // Or maybe the user implies checking *at* 11:59.
-  // Let's strictly follow: "when the student did not apear in 11:59 the student should be absent"
-  // This implies we can only definitively say they are absent once 11:59 PM has passed.
   const isEndOfDay = currentTime.getHours() === 23 && currentTime.getMinutes() >= 59;
-
-  // If viewing past dates, any missing log is absent.
-  // For today, only count as absent if it's 11:59 PM or later.
   const isPastDate = new Date(selectedDate) < new Date(new Date().setHours(0, 0, 0, 0));
 
-  const missingLogsVal = totalStudents - filteredAttendance.length;
+  // Determine actual absent count
+  const explicitAbsentCount = filteredCombined.filter(a => a.status === 'absent').length;
+  const absentCount = (isPastDate || (isToday && isEndOfDay)) ? explicitAbsentCount : explicitAbsentCount;
 
-  const unaccountedAbsent = (isPastDate || (isToday && isEndOfDay))
-    ? Math.max(0, missingLogsVal)
-    : 0;
+  // Group by Room
+  const groupedAttendance = filteredCombined.reduce((acc, curr) => {
+    if (!acc[curr.roomNumber]) {
+      acc[curr.roomNumber] = [];
+    }
+    acc[curr.roomNumber].push(curr);
+    return acc;
+  }, {} as Record<string, typeof filteredCombined>);
 
-  const absentCount = explicitAbsentCount + unaccountedAbsent;
-
-  const { currentData, currentPage, maxPage, jump, next, prev } = usePagination(filteredAttendance, 10);
-  const currentLogs = currentData();
+  // Sort rooms: put 'Unassigned' at the end, otherwise sort alphabetically/numerically
+  const sortedRooms = Object.keys(groupedAttendance).sort((a, b) => {
+    if (a === 'Unassigned') return 1;
+    if (b === 'Unassigned') return -1;
+    return a.localeCompare(b, undefined, { numeric: true });
+  });
 
   if (user?.role === 'student') {
     const qrData = JSON.stringify({
@@ -591,225 +590,180 @@ export function AttendanceManagement() {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200">
-              {currentLogs.map((log) => {
-                const student = typeof log.student === 'string' ? null : log.student;
-                const name = student?.name || 'Unknown';
-                const initials = name
-                  .split(' ')
-                  .filter(Boolean)
-                  .map((n) => n[0])
-                  .join('');
-                const room = student?.studentProfile?.roomNumber || 'N/A';
+              {sortedRooms.map(room => (
+                <React.Fragment key={`desktop-room-${room}`}>
+                  <tr className="bg-gray-100">
+                    <td colSpan={selectedSession === 'final' ? 4 : 5} className="px-6 py-3 font-semibold text-[#001F3F]">
+                      Room {room} <span className="text-gray-500 text-sm ml-2">({groupedAttendance[room].length} students)</span>
+                    </td>
+                  </tr>
+                  {groupedAttendance[room].map((student) => {
+                    const initials = student.name
+                      .split(' ')
+                      .filter(Boolean)
+                      .map((n) => n[0])
+                      .join('');
 
-                return (
-                  <tr key={log._id} className="hover:bg-gray-50">
-                    <td className="px-6 py-4">
-                      <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 bg-[#001F3F] text-white rounded-full flex items-center justify-center text-sm">
-                          {initials}
-                        </div>
-                        <span>{name}</span>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4">
-                      <span className="bg-gray-100 px-3 py-1 rounded text-sm">{room}</span>
-                    </td>
-                    <td className="px-6 py-4 text-sm text-gray-600">
-                      {formatTime(log.timeIn) ? (
-                        <div className="flex items-center gap-2">
-                          <Clock className="w-4 h-4 text-gray-500" />
-                          {formatTime(log.timeIn)}
-                        </div>
-                      ) : (
-                        <span className="text-gray-400">-</span>
-                      )}
-                    </td>
-                    {selectedSession !== 'final' && (
+                    return (
+                      <tr key={student._id} className="hover:bg-gray-50">
+                        <td className="px-6 py-4">
+                          <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 bg-[#001F3F] text-white rounded-full flex items-center justify-center text-sm">
+                              {initials}
+                            </div>
+                            <span>{student.name}</span>
+                          </div>
+                        </td>
+                        <td className="px-6 py-4">
+                          <span className="bg-gray-100 px-3 py-1 rounded text-sm">{student.roomNumber}</span>
+                        </td>
                         <td className="px-6 py-4 text-sm text-gray-600">
-                          {formatTime(log.timeOut) ? (
+                          {formatTime(student.timeIn) ? (
                             <div className="flex items-center gap-2">
                               <Clock className="w-4 h-4 text-gray-500" />
-                              {formatTime(log.timeOut)}
+                              {formatTime(student.timeIn)}
                             </div>
                           ) : (
                             <span className="text-gray-400">-</span>
                           )}
                         </td>
-                    )}
-                    <td className="px-6 py-4">
-                      <span
-                        className={`inline-flex items-center gap-1 px-3 py-1 rounded text-xs ${log.status === 'present'
-                          ? 'bg-green-100 text-green-700'
-                          : log.status === 'late'
-                            ? 'bg-orange-100 text-orange-700'
-                            : log.status === 'on_pass'
-                                ? 'bg-blue-100 text-blue-700'
-                                : 'bg-red-100 text-red-700'
-                          } `}
-                      >
-                        {log.status === 'present' ? (
-                          <UserCheck className="w-3 h-3" />
-                        ) : log.status === 'late' ? (
-                          <Clock className="w-3 h-3" />
-                        ) : log.status === 'on_pass' ? (
-                          <Home className="w-3 h-3" />
-                        ) : (
-                          <UserX className="w-3 h-3" />
+                        {selectedSession !== 'final' && (
+                            <td className="px-6 py-4 text-sm text-gray-600">
+                              {formatTime(student.timeOut) ? (
+                                <div className="flex items-center gap-2">
+                                  <Clock className="w-4 h-4 text-gray-500" />
+                                  {formatTime(student.timeOut)}
+                                </div>
+                              ) : (
+                                <span className="text-gray-400">-</span>
+                              )}
+                            </td>
                         )}
-                        {log.status === 'on_pass' ? 'On Pass' : log.status.charAt(0).toUpperCase() + log.status.slice(1)}
-                      </span>
-                    </td>
-                  </tr>
-                );
-              })}
+                        <td className="px-6 py-4">
+                          <span
+                            className={`inline-flex items-center gap-1 px-3 py-1 rounded text-xs ${student.status === 'present'
+                              ? 'bg-green-100 text-green-700'
+                              : student.status === 'late'
+                                ? 'bg-orange-100 text-orange-700'
+                                : student.status === 'on_pass'
+                                    ? 'bg-blue-100 text-blue-700'
+                                    : 'bg-red-100 text-red-700'
+                              } `}
+                          >
+                            {student.status === 'present' ? (
+                              <UserCheck className="w-3 h-3" />
+                            ) : student.status === 'late' ? (
+                              <Clock className="w-3 h-3" />
+                            ) : student.status === 'on_pass' ? (
+                              <Home className="w-3 h-3" />
+                            ) : (
+                              <UserX className="w-3 h-3" />
+                            )}
+                            {student.status === 'on_pass' ? 'On Pass' : student.status.charAt(0).toUpperCase() + student.status.slice(1)}
+                          </span>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </React.Fragment>
+              ))}
             </tbody>
           </table>
 
-          {/* Pagination Controls Desktop */}
-          {maxPage > 1 && (
-            <div className="p-4 border-t border-gray-100">
-              <Pagination>
-                <PaginationContent>
-                  <PaginationItem>
-                    <PaginationPrevious
-                      onClick={(e) => { e.preventDefault(); prev(); }}
-                      className={currentPage === 1 ? 'pointer-events-none opacity-50' : 'cursor-pointer'}
-                    />
-                  </PaginationItem>
-                  {Array.from({ length: maxPage }).map((_, i) => (
-                    <PaginationItem key={i}>
-                      <PaginationLink
-                        isActive={currentPage === i + 1}
-                        onClick={(e) => { e.preventDefault(); jump(i + 1); }}
-                        className="cursor-pointer"
-                      >
-                        {i + 1}
-                      </PaginationLink>
-                    </PaginationItem>
-                  ))}
-                  <PaginationItem>
-                    <PaginationNext
-                      onClick={(e) => { e.preventDefault(); next(); }}
-                      className={currentPage === maxPage ? 'pointer-events-none opacity-50' : 'cursor-pointer'}
-                    />
-                  </PaginationItem>
-                </PaginationContent>
-              </Pagination>
-            </div>
-          )}
         </div>
       </div>
 
-      {/* Mobile Card View */}
+      {/* Mobile Attendance Cards */}
       <div className="md:hidden space-y-4">
-        <h3 className="text-[#001F3F] font-semibold px-1">
+        <h3 className="text-[#001F3F] font-semibold text-lg px-2">
+          Attendance Log -{' '}
           {new Date(selectedDate).toLocaleDateString('en-US', {
-            weekday: 'long',
             year: 'numeric',
             month: 'long',
             day: 'numeric',
           })}
         </h3>
-        {currentLogs.map((log) => {
-          const student = typeof log.student === 'string' ? null : log.student;
-          const name = student?.name || 'Unknown';
-          const initials = name
-            .split(' ')
-            .filter(Boolean)
-            .map((n) => n[0])
-            .join('');
-          const room = student?.studentProfile?.roomNumber || 'N/A';
+        {sortedRooms.map(room => (
+          <div key={`mobile-room-${room}`} className="mb-6">
+            <h4 className="text-[#001F3F] font-bold text-md px-2 py-2 mb-2 border-b border-gray-200">
+              Room {room} <span className="text-gray-500 font-normal text-sm ml-1">({groupedAttendance[room].length} students)</span>
+            </h4>
+            <div className="space-y-4">
+              {groupedAttendance[room].map((student) => {
+                const initials = student.name
+                  .split(' ')
+                  .filter(Boolean)
+                  .map((n) => n[0])
+                  .join('');
 
-          return (
-            <div key={log._id} className="bg-white p-4 rounded-lg shadow border border-gray-100">
-              <div className="flex justify-between items-start mb-3">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 bg-[#001F3F] text-white rounded-full flex items-center justify-center text-sm font-bold">
-                    {initials}
-                  </div>
-                  <div>
-                    <div className="font-semibold text-[#001F3F]">{name}</div>
-                    <div className="text-xs text-gray-500">Room: {room}</div>
-                  </div>
-                </div>
-                <span
-                  className={`inline-flex items-center gap-1 px-2 py-1 rounded text-xs ${log.status === 'present'
-                    ? 'bg-green-100 text-green-700'
-                    : log.status === 'late'
-                      ? 'bg-orange-100 text-orange-700'
-                      : log.status === 'on_pass'
-                        ? 'bg-blue-100 text-blue-700'
-                        : 'bg-red-100 text-red-700'
-                    } `}
-                >
-                  {log.status === 'present' ? (
-                    <UserCheck className="w-3 h-3" />
-                  ) : log.status === 'late' ? (
-                    <Clock className="w-3 h-3" />
-                  ) : log.status === 'on_pass' ? (
-                    <Home className="w-3 h-3" />
-                  ) : (
-                    <UserX className="w-3 h-3" />
-                  )}
-                  {log.status === 'on_pass' ? 'On Pass' : log.status.charAt(0).toUpperCase() + log.status.slice(1)}
-                </span>
-              </div>
-
-              <div className={`grid ${selectedSession === 'final' ? 'grid-cols-1' : 'grid-cols-2'} gap-4 text-sm mt-4 pt-4 border-t border-gray-100`}>
-                <div>
-                  <span className="text-gray-500 text-xs block mb-1">{selectedSession === 'final' ? 'Time' : 'Check-In'}</span>
-                  {formatTime(log.timeIn) ? (
-                    <div className="flex items-center gap-1 font-medium text-gray-700">
-                      <Clock className="w-3 h-3 text-green-600" />
-                      {formatTime(log.timeIn)}
-                    </div>
-                  ) : (
-                    <span className="text-gray-400">-</span>
-                  )}
-                </div>
-                {selectedSession !== 'final' && (
-                  <div>
-                    <span className="text-gray-500 text-xs block mb-1">Check-Out</span>
-                    {formatTime(log.timeOut) ? (
-                      <div className="flex items-center gap-1 font-medium text-gray-700">
-                        <Clock className="w-3 h-3 text-red-600" />
-                        {formatTime(log.timeOut)}
+                return (
+                  <div key={student._id} className="bg-white p-4 rounded-lg shadow border border-gray-100">
+                    <div className="flex justify-between items-start mb-3">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 bg-[#001F3F] text-white rounded-full flex items-center justify-center text-sm font-bold">
+                          {initials}
+                        </div>
+                        <div>
+                          <div className="font-semibold text-[#001F3F]">{student.name}</div>
+                          <div className="text-xs text-gray-500">Room: {student.roomNumber}</div>
+                        </div>
                       </div>
-                    ) : (
-                      <span className="text-gray-400">-</span>
-                    )}
+                      <span
+                        className={`inline-flex items-center gap-1 px-2 py-1 rounded text-xs ${student.status === 'present'
+                          ? 'bg-green-100 text-green-700'
+                          : student.status === 'late'
+                            ? 'bg-orange-100 text-orange-700'
+                            : student.status === 'on_pass'
+                              ? 'bg-blue-100 text-blue-700'
+                              : 'bg-red-100 text-red-700'
+                          } `}
+                      >
+                        {student.status === 'present' ? (
+                          <UserCheck className="w-3 h-3" />
+                        ) : student.status === 'late' ? (
+                          <Clock className="w-3 h-3" />
+                        ) : student.status === 'on_pass' ? (
+                          <Home className="w-3 h-3" />
+                        ) : (
+                          <UserX className="w-3 h-3" />
+                        )}
+                        {student.status === 'on_pass' ? 'On Pass' : student.status.charAt(0).toUpperCase() + student.status.slice(1)}
+                      </span>
+                    </div>
+
+                    <div className={`grid ${selectedSession === 'final' ? 'grid-cols-1' : 'grid-cols-2'} gap-4 text-sm mt-4 pt-4 border-t border-gray-100`}>
+                      <div>
+                        <span className="text-gray-500 text-xs block mb-1">{selectedSession === 'final' ? 'Time' : 'Check-In'}</span>
+                        {formatTime(student.timeIn) ? (
+                          <div className="flex items-center gap-1 font-medium text-gray-700">
+                            <Clock className="w-3 h-3 text-green-600" />
+                            {formatTime(student.timeIn)}
+                          </div>
+                        ) : (
+                          <span className="text-gray-400">-</span>
+                        )}
+                      </div>
+                      {selectedSession !== 'final' && (
+                        <div>
+                          <span className="text-gray-500 text-xs block mb-1">Check-Out</span>
+                          {formatTime(student.timeOut) ? (
+                            <div className="flex items-center gap-1 font-medium text-gray-700">
+                              <Clock className="w-3 h-3 text-red-600" />
+                              {formatTime(student.timeOut)}
+                            </div>
+                          ) : (
+                            <span className="text-gray-400">-</span>
+                          )}
+                        </div>
+                      )}
+                    </div>
                   </div>
-                )}
-              </div>
+                );
+              })}
             </div>
-          );
-        })}
-        {/* Pagination Controls Mobile */}
-        {maxPage > 1 && (
-          <div className="flex justify-center pt-2">
-            <Pagination>
-              <PaginationContent>
-                <PaginationItem>
-                  <PaginationPrevious
-                    onClick={(e) => { e.preventDefault(); prev(); }}
-                    className={currentPage === 1 ? 'pointer-events-none opacity-50' : 'cursor-pointer'}
-                  />
-                </PaginationItem>
-                <PaginationItem>
-                  <span className="mx-2 text-sm">{currentPage} / {maxPage}</span>
-                </PaginationItem>
-                <PaginationItem>
-                  <PaginationNext
-                    onClick={(e) => { e.preventDefault(); next(); }}
-                    className={currentPage === maxPage ? 'pointer-events-none opacity-50' : 'cursor-pointer'}
-                  />
-                </PaginationItem>
-              </PaginationContent>
-            </Pagination>
           </div>
-        )}
+        ))}
       </div>
     </div>
   );
 }
-
