@@ -123,7 +123,7 @@ export function AttendanceManagement() {
       if (selectedSession === 'final') {
         const currentHour = new Date().getHours();
         if (currentHour < 20) {
-            Swal.fire('Not Available', 'Final attendance can only be recorded after 8:00 PM.', 'warning');
+            Swal.fire('Not Available', 'Present attendance can only be recorded after 8:00 PM.', 'warning');
             return;
         }
 
@@ -135,12 +135,12 @@ export function AttendanceManagement() {
         });
 
         if (existingLog) {
-            Swal.fire('Already Recorded', `${studentName} already has a final attendance record for today.`, 'info');
+            Swal.fire('Already Recorded', `${studentName} already has a Present attendance record for today.`, 'info');
             return;
         }
 
         await recordAttendance(studentId, today, 'check_in', 'final');
-        Swal.fire('Success', `Final Attendance Recorded for ${studentName}`, 'success');
+        Swal.fire('Success', `Present Attendance Recorded for ${studentName}`, 'success');
         return;
       }
 
@@ -519,7 +519,7 @@ export function AttendanceManagement() {
             <option value="morning">Morning</option>
             <option value="afternoon">Afternoon</option>
             <option value="evening">Evening</option>
-            <option value="final">Final (8 PM+)</option>
+            <option value="final">Present (8 PM+)</option>
           </select>
         </div>
         
