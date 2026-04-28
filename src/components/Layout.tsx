@@ -33,7 +33,11 @@ export function Layout({ children, currentPage, onNavigate }: LayoutProps) {
   const [showLogoutFeedback, setShowLogoutFeedback] = useState(false);
 
   const handleLogoutClick = () => {
-    setShowLogoutFeedback(true);
+    if (user?.role === 'student') {
+      setShowLogoutFeedback(true);
+    } else {
+      executeLogout();
+    }
   };
 
   const executeLogout = () => {

@@ -23,7 +23,6 @@ import { PendingValidation } from './components/PendingValidation';
 import { SystemSettings } from './components/SystemSettings';
 import { ErrorPage } from './components/ErrorPage';
 import { PassManagement } from './components/PassManagement';
-import { FeedbackModal } from './components/FeedbackModal';
 
 
 
@@ -31,17 +30,11 @@ function AppContent() {
   const { user, isAppLoading } = useAuth();
   const [currentPage, setCurrentPage] = useState('dashboard');
   const [showLogin, setShowLogin] = useState(false);
-  const [showFeedbackModal, setShowFeedbackModal] = useState(false);
 
   // Reset to dashboard when user logs in
   useEffect(() => {
     if (user) {
       setCurrentPage('dashboard');
-      const feedbackShown = sessionStorage.getItem('login_feedback_shown');
-      if (!feedbackShown) {
-        setShowFeedbackModal(true);
-        sessionStorage.setItem('login_feedback_shown', 'true');
-      }
     }
   }, [user]);
 
@@ -171,11 +164,6 @@ function AppContent() {
   return (
     <Layout currentPage={currentPage} onNavigate={setCurrentPage}>
       {renderPage()}
-      <FeedbackModal
-        isOpen={showFeedbackModal}
-        onClose={() => setShowFeedbackModal(false)}
-        context="login"
-      />
     </Layout>
   );
 }
