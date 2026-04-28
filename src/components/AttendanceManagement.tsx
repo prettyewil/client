@@ -94,7 +94,7 @@ export function AttendanceManagement() {
     }
   };
 
-  const recordAttendance = async (studentId: string, date: string, type: 'check_in' | 'check_out', logId?: string) => {
+  const recordAttendance = async (studentId: string, date: string, type: 'check_in' | 'check_out', targetSession: string, logId?: string) => {
     try {
       const now = new Date();
       const status = type === 'check_in' ? getStatusBasedOnTime(now) : 'present'; // Default to present/late logic
@@ -103,7 +103,7 @@ export function AttendanceManagement() {
       const payload: any = {
         student: studentId,
         date: date,
-        session: selectedSession,
+        session: targetSession,
       };
 
       if (type === 'check_in') {
@@ -126,47 +126,74 @@ export function AttendanceManagement() {
   };
 
   const processAttendanceAction = async (studentId: string, studentName: string) => {
-    if (selectedSession === 'final') {
+    try {
+      const today = new Date().toISOString().split('T')[0];
+
+      if (selectedSession === 'final') {
         const currentHour = new Date().getHours();
         if (currentHour < 20) {
             Swal.fire('Not Available', 'Final attendance can only be recorded after 8:00 PM.', 'warning');
             return;
         }
-    }
 
-    try {
-      const today = new Date().toISOString().split('T')[0];
-      const res = await axios.get('/api/attendance', { params: { date: today, session: selectedSession } });
+        const res = await axios.get('/api/attendance', { params: { date: today, session: 'final' } });
+        const logs: AttendanceLogDto[] = res.data;
+        const existingLog = logs.find((l) => {
+          const sId = typeof l.student === 'string' ? l.student : l.student?._id;
+          return sId === studentId;
+        });
+
+        if (existingLog) {
+            Swal.fire('Already Recorded', `${studentName} already has a final attendance record for today.`, 'info');
+            return;
+        }
+
+        await recordAttendance(studentId, today, 'check_in', 'final');
+        Swal.fire('Success', `Final Attendance Recorded for ${studentName}`, 'success');
+        return;
+      }
+
+      // Non-final sequential assignment
+      const res = await axios.get('/api/attendance', { params: { date: today } });
       const logs: AttendanceLogDto[] = res.data;
-
-      const existingLog = logs.find((l) => {
+      
+      const studentLogs = logs.filter((l) => {
         const sId = typeof l.student === 'string' ? l.student : l.student?._id;
         return sId === studentId;
       });
 
-      if (existingLog && selectedSession === 'final') {
-          Swal.fire('Already Recorded', `${studentName} already has a final attendance record for today.`, 'info');
-          return;
-      }
-
+      const sessionsOrder = ['morning', 'afternoon', 'evening'];
+      let targetSession = '';
       let type: 'check_in' | 'check_out' = 'check_in';
+      let existingLogId: string | undefined;
+      let targetLog: AttendanceLogDto | undefined;
 
-      if (existingLog) {
-        if (existingLog.timeIn && !existingLog.timeOut) {
+      for (const sess of sessionsOrder) {
+        const log = studentLogs.find(l => l.session === sess);
+        if (!log) {
+          targetSession = sess;
+          type = 'check_in';
+          break;
+        } else if (log.timeIn && !log.timeOut) {
+          targetSession = sess;
           type = 'check_out';
-        } else if (existingLog.timeIn && existingLog.timeOut) {
-          Swal.fire('Already Recorded', `${studentName} has already checked in and out for this session.`, 'info');
-          return;
+          existingLogId = log._id;
+          targetLog = log;
+          break;
         }
       }
 
-      await recordAttendance(studentId, today, type, existingLog?._id);
+      if (!targetSession) {
+        Swal.fire('Already Recorded', `${studentName} has already completed morning, afternoon, and evening attendance for today.`, 'info');
+        return;
+      }
 
-      const status = type === 'check_in' ? getStatusBasedOnTime(new Date()) : (existingLog?.status || 'present');
+      await recordAttendance(studentId, today, type, targetSession, existingLogId);
 
+      const status = type === 'check_in' ? getStatusBasedOnTime(new Date()) : (targetLog?.status || 'present');
       Swal.fire(
         'Success',
-        `${type === 'check_in' ? `Check-In Recorded (${status.toUpperCase()})` : 'Check-Out Recorded'} for ${studentName}`,
+        `${type === 'check_in' ? `Check-In Recorded (${status.toUpperCase()})` : 'Check-Out Recorded'} for ${targetSession} session (${studentName})`,
         'success'
       );
     } catch (error: any) {
